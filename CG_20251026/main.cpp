@@ -1,6 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS 
-#include <stdlib.h>
-#include <stdio.h>
 #include <iostream>
 #include <glew.h>
 #include <freeglut.h>
@@ -8,6 +5,8 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "filetobuf.h"
+
 void make_vertexShaders();
 void make_fragmentShaders();
 GLuint make_shaderProgram();
@@ -17,34 +16,6 @@ GLint width = 900, height = 900;
 GLuint shaderProgramID;
 GLuint vertexShader;
 GLuint fragmentShader;
-
-char* filetobuf(const char* file)
-{
-	FILE* fptr;
-	long length;
-	char* buf;
-	fptr = fopen(file, "rb");
-	if (!fptr)
-		return NULL;
-	fseek(fptr, 0, SEEK_END);
-	length = ftell(fptr);
-	buf = (char*)malloc(length + 1);
-	fseek(fptr, 0, SEEK_SET);
-	fread(buf, length, 1, fptr);
-	fclose(fptr);
-	buf[length] = 0;
-	return buf;
-	// Open file for reading 
-	// Return NULL on failure 
-	// Seek to the end of the file 
-	// Find out how many bytes into the file we are 
-	// Allocate a buffer for the entire length of the file and a null terminator 
-	// Go back to the beginning of the file 
-	// Read the contents of the file in to the buffer 
-	// Close the file 
-	// Null terminator 
-	// Return the buffer 
-}
 
 void main(int argc, char** argv)
 {
