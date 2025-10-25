@@ -57,12 +57,16 @@ GLvoid drawScene()
 	GLint viewLoc = glGetUniformLocation(shaderProgramID, "view");
 	GLint projLoc = glGetUniformLocation(shaderProgramID, "projection");
 
+	glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -5.0f);
+	glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
 	glm::mat4 mTransform = glm::mat4(1.0f);
 	mTransform = glm::rotate(mTransform, glm::radians(-30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &mTransform[0][0]);
 
 	glm::mat4 vTransform = glm::mat4(1.0f);
-	vTransform = glm::translate(vTransform, glm::vec3(0.0f, 0.0f, -3.0f));
+	vTransform = glm::lookAt(cameraPos, cameraDirection, cameraUp);
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &vTransform[0][0]);
 
 	glm::mat4 pTransform = glm::mat4(1.0f);
