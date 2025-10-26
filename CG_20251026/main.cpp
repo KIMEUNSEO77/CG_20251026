@@ -74,15 +74,14 @@ int main(int argc, char** argv)
 
 // 궤도 그리는 함수
 void DrawOrbit(GLuint shaderProgramID,
-float rx, float rz,
-const glm::vec3& center,
-float tiltX_deg, float tiltZ_deg,
-const glm::vec3& color)
+	float rx, float rz,
+	const glm::vec3& center,
+	float angle,
+	const glm::vec3& color)
 {
 	glm::mat4 M(1.0f);
 	M = glm::translate(M, center);                         // 위치
-	M = glm::rotate(M, glm::radians(tiltX_deg), { 1,0,0 });  // x로 기울이기
-	M = glm::rotate(M, glm::radians(tiltZ_deg), { 0,0,1 });  // z로 기울이기 (대각선 느낌)
+	M = glm::rotate(M, glm::radians(angle), { 1,0,1 });  // x, z축 기울이기
 	M = glm::scale(M, glm::vec3(rx, 1.0f, rz));            // 타원 크기
 
 	GLint modelLoc = glGetUniformLocation(shaderProgramID, "model");
@@ -140,9 +139,9 @@ GLvoid drawScene()
 
 	// 궤도 그리기
 	glm::vec3 center(0, 0, 0);
-	DrawOrbit(shaderProgramID, 2.0f, 2.0f, center, 2.0f, 0.0f, { 0.0f, 0.0f, 0.0f });
-	DrawOrbit(shaderProgramID, 3.0f, 3.0f, center, 45.0f, 45.0f, { 0.0f, 0.0f, 0.0f });
-	DrawOrbit(shaderProgramID, 3.0f, 3.0f, center, -45.0f, -45.0, { 0.0f, 0.0f, 0.0f });
+	DrawOrbit(shaderProgramID, 2.0f, 2.0f, center, 2.0f, { 0.0f, 0.0f, 0.0f });
+	DrawOrbit(shaderProgramID, 3.0f, 3.0f, center, 45.0f, { 0.0f, 0.0f, 0.0f });
+	DrawOrbit(shaderProgramID, 3.0f, 3.0f, center, -45.0f, { 0.0f, 0.0f, 0.0f });
 
 	glm::mat4 m1 = glm::rotate(glm::mat4(1.0f), glm::radians(angle_1), glm::vec3(0.0f, 1.0f, 0.0f));
 	m1 = glm::translate(m1, glm::vec3(2.0f, 0.0f, 0.0f));
