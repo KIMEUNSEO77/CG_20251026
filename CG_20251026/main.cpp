@@ -20,6 +20,9 @@ float angle_3 = 0.0f;
 bool orthoMode = false;  // false: 원근 투영, true: 직교 투영
 bool wireMode = false;   // false: 솔리드 모드, true: 와이어 모드
 
+float currentRadius = 3.0f;
+float moonRadius = 1.0f;
+
 void Timer(int value)
 {
 	angle_1 += 1.0f;
@@ -38,6 +41,22 @@ void SetWireMode(bool mode)
 	glutPostRedisplay();
 }
 
+// 반지름 증가, 감소
+void IncreaseRadius(float delta)
+{
+	currentRadius += delta;
+	if (currentRadius <= 1.0f) currentRadius = 1.0f;
+	if (currentRadius >= 5.0f) currentRadius = 5.0f;
+	glutPostRedisplay();
+}
+void IncreaseMoonRadius(float delta)
+{
+	moonRadius += delta;
+	if (moonRadius <= 0.4f) moonRadius = 0.4f;
+	if (moonRadius >= 1.6f) moonRadius = 1.6f;
+	glutPostRedisplay();
+}
+
 GLvoid Keyboard(unsigned char key, int x, int y)
 {
 	switch (key)
@@ -50,8 +69,8 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 	case 'd': break;
 	case '+': break;
 	case '-': break;
-	case 'y': break;
-	case 'Y': break;
+	case 'y': IncreaseRadius(-0.5f); IncreaseMoonRadius(-0.2f); break;
+	case 'Y': IncreaseRadius(0.5f); IncreaseMoonRadius(0.2f); break;
 	case 'z': break;
 	case 'Z': break;
 
@@ -172,36 +191,36 @@ GLvoid drawScene()
 
 	// 궤도 그리기
 	glm::vec3 center(0, 0, 0);
-	DrawOrbit(shaderProgramID, 2.0f, 2.0f, center, 2.0f, { 0.0f, 0.0f, 0.0f });
-	DrawOrbit(shaderProgramID, 3.0f, 3.0f, center, 45.0f, { 0.0f, 0.0f, 0.0f });
-	DrawOrbit(shaderProgramID, 3.0f, 3.0f, center, -45.0f, { 0.0f, 0.0f, 0.0f });
+	DrawOrbit(shaderProgramID, currentRadius, currentRadius, center, 2.0f, { 0.0f, 0.0f, 0.0f });
+	DrawOrbit(shaderProgramID, currentRadius, currentRadius, center, 45.0f, { 0.0f, 0.0f, 0.0f });
+	DrawOrbit(shaderProgramID, currentRadius, currentRadius, center, -45.0f, { 0.0f, 0.0f, 0.0f });
 
 	glm::mat4 m1 = glm::rotate(glm::mat4(1.0f), glm::radians(angle_1), glm::vec3(0.0f, 1.0f, 0.0f));
-	m1 = glm::translate(m1, glm::vec3(2.0f, 0.0f, 0.0f));
+	m1 = glm::translate(m1, glm::vec3(currentRadius, 0.0f, 0.0f));
 	DrawSphere(gSphere, shaderProgramID, m1, glm::vec3(0.8f, 0.8f, 0.0f));
 
 	glm::mat4 m2 = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 1.0f));
 	m2 = glm::rotate(m2, glm::radians(angle_2), glm::vec3(0.0f, 1.0f, 0.0f));
-	m2 = glm::translate(m2, glm::vec3(-3.0f, 0.0f, 0.0f));
+	m2 = glm::translate(m2, glm::vec3(-currentRadius, 0.0f, 0.0f));
 	DrawSphere(gSphere, shaderProgramID, m2, glm::vec3(0.0f, 0.8f, 0.8f));
 
 	glm::mat4 m3 = glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 1.0f));
 	m3 = glm::rotate(m3, glm::radians(angle_3), glm::vec3(0.0f, 1.0f, 0.0f));
-	m3 = glm::translate(m3, glm::vec3(3.0f, 0.0f, 0.0f));
+	m3 = glm::translate(m3, glm::vec3(currentRadius, 0.0f, 0.0f));
 	DrawSphere(gSphere, shaderProgramID, m3, glm::vec3(0.8f, 0.0f, 0.8f));
 
 	glm::vec3 m1Center = glm::vec3(m1[3]);   // x, y, z 위치 추출
 	glm::vec3 m2Center = glm::vec3(m2[3]);
 	glm::vec3 m3Center = glm::vec3(m3[3]);
 	// 작은 구 궤도 그리기
-	DrawOrbit(shaderProgramID, 1.0f, 1.0f, m1Center, 2.0, { 0.0f, 0.0f, 0.0f });
-	DrawOrbit(shaderProgramID, 1.0f, 1.0f, m2Center, 45.0f, { 0.0f, 0.0f, 0.0f });
-	DrawOrbit(shaderProgramID, 1.0f, 1.0f, m3Center, -45.0f, { 0.0f, 0.0f, 0.0f });
+	DrawOrbit(shaderProgramID, moonRadius, moonRadius, m1Center, 2.0, { 0.0f, 0.0f, 0.0f });
+	DrawOrbit(shaderProgramID, moonRadius, moonRadius, m2Center, 45.0f, { 0.0f, 0.0f, 0.0f });
+	DrawOrbit(shaderProgramID, moonRadius, moonRadius, m3Center, -45.0f, { 0.0f, 0.0f, 0.0f });
 
 	glm::mat4 d1 = glm::mat4(1.0f);
 	d1 = glm::translate(d1, m1Center);
 	d1 = glm::rotate(d1, glm::radians(angle_3), glm::vec3(0.0f, 1.0f, 0.0f));
-	d1 = glm::translate(d1, glm::vec3(1.0f, 0.0f, 0.0f));
+	d1 = glm::translate(d1, glm::vec3(moonRadius, 0.0f, 0.0f));
 	d1 = glm::scale(d1, glm::vec3(0.3f, 0.3f, 0.3f));
 	DrawSphere(gSphere, shaderProgramID, d1, glm::vec3(1.0f, 1.0f, 0.0f));
 
@@ -209,7 +228,7 @@ GLvoid drawScene()
 	d2 = glm::translate(d2, m2Center);
 	d2 = glm::rotate(d2, glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 1.0f));
 	d2 = glm::rotate(d2, glm::radians(angle_3), glm::vec3(0.0f, 1.0f, 0.0f));
-	d2 = glm::translate(d2, glm::vec3(-1.0f, 0.0f, 0.0f));
+	d2 = glm::translate(d2, glm::vec3(-moonRadius, 0.0f, 0.0f));
 	d2 = glm::scale(d2, glm::vec3(0.3f, 0.3f, 0.3f));
 	DrawSphere(gSphere, shaderProgramID, d2, glm::vec3(0.0f, 0.5f, 0.5f));
 
@@ -217,7 +236,7 @@ GLvoid drawScene()
 	d3 = glm::translate(d3, m3Center);
 	d3 = glm::rotate(d3, glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 1.0f));
 	d3 = glm::rotate(d3, glm::radians(angle_3), glm::vec3(0.0f, 1.0f, 0.0f));
-	d3 = glm::translate(d3, glm::vec3(1.0f, 0.0f, 0.0f));
+	d3 = glm::translate(d3, glm::vec3(moonRadius, 0.0f, 0.0f));
 	d3 = glm::scale(d3, glm::vec3(0.3f, 0.3f, 0.3f));
 	DrawSphere(gSphere, shaderProgramID, d3, glm::vec3(0.5f, 0.0f, 0.5f));
 
