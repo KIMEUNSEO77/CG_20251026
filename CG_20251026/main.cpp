@@ -17,6 +17,8 @@ float angle_1 = 0.0f;
 float angle_2 = 0.0f;
 float angle_3 = 0.0f;
 
+bool orthoMode = false;  // false: 원근 투영, true: 직교 투영
+
 void Timer(int value)
 {
 	angle_1 += 1.0f;
@@ -30,6 +32,19 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
+	case 'p': orthoMode = !orthoMode; break;
+	case 'm': break;
+	case 'w': break;
+	case 'a': break;
+	case 's': break;
+	case 'd': break;
+	case '+': break;
+	case '-': break;
+	case 'y': break;
+	case 'Y': break;
+	case 'z': break;
+	case 'Z': break;
+
 	case 'q':
 		exit(0);
 		break;
@@ -129,8 +144,16 @@ GLvoid drawScene()
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &vTransform[0][0]);
 
 	glm::mat4 pTransform = glm::mat4(1.0f);
-	pTransform = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
-	glUniformMatrix4fv(projLoc, 1, GL_FALSE, &pTransform[0][0]);
+	if (orthoMode)
+	{
+		pTransform = glm::ortho(-3.0f, 3.0f, -3.0f, 3.0f, 0.1f, 100.0f);
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, &pTransform[0][0]);
+	}
+	else
+	{
+		pTransform = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, &pTransform[0][0]);
+	}
 
 	// 중심 구
 	glm::mat4 centerM = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
