@@ -18,6 +18,7 @@ float angle_2 = 0.0f;
 float angle_3 = 0.0f;
 
 bool orthoMode = false;  // false: 원근 투영, true: 직교 투영
+bool wireMode = false;   // false: 솔리드 모드, true: 와이어 모드
 
 void Timer(int value)
 {
@@ -28,12 +29,21 @@ void Timer(int value)
 	glutTimerFunc(16, Timer, 0);
 }
 
+// 와이어 모드
+void SetWireMode(bool mode)
+{
+	if (mode) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	else glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	glutPostRedisplay();
+}
+
 GLvoid Keyboard(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
 	case 'p': orthoMode = !orthoMode; break;
-	case 'm': break;
+	case 'm': wireMode = !wireMode;  SetWireMode(wireMode); break;
 	case 'w': break;
 	case 'a': break;
 	case 's': break;
