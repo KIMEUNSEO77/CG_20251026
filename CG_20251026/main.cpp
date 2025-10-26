@@ -59,10 +59,13 @@ int main(int argc, char** argv)
 }
 
 // 구 그리는 함수
-void DrawSphere(const Mesh& mesh, GLuint shaderProgram, const glm::mat4& model)
+void DrawSphere(const Mesh& mesh, GLuint shaderProgram, const glm::mat4& model, const glm::vec3& color)
 {
 	GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
+
+	GLint colorLoc = glGetUniformLocation(shaderProgram, "vColor");
+	glUniform3fv(colorLoc, 1, &color[0]);
 
 	glBindVertexArray(mesh.vao);
 	glDrawArrays(GL_TRIANGLES, 0, mesh.count);
@@ -91,22 +94,22 @@ GLvoid drawScene()
 	pTransform = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, &pTransform[0][0]);
 
-	// 중심 구 (기존과 동일)
+	// 중심 구
 	glm::mat4 center = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	center = glm::scale(center, glm::vec3(2.0f, 2.0f, 2.0f));
-	DrawSphere(gSphere, shaderProgramID, center);
+	DrawSphere(gSphere, shaderProgramID, center, glm::vec3(0.8f, 0.8f, 0.8f));
 
-	// 오른쪽에 구
+	// 오른쪽 구
 	glm::mat4 m1 = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
-	DrawSphere(gSphere, shaderProgramID, m1);
+	DrawSphere(gSphere, shaderProgramID, m1, glm::vec3(0.8f, 0.8f, 0.0f));
 
 	// 왼쪽 아래 구
 	glm::mat4 m2 = glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, -2.0f, 0.0f));
-	DrawSphere(gSphere, shaderProgramID, m2);
+	DrawSphere(gSphere, shaderProgramID, m2, glm::vec3(0.0f, 0.8f, 0.8f));
 
 	// 오른쪽 아래 구
 	glm::mat4 m3 = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, -2.0f, 0.0f));
-	DrawSphere(gSphere, shaderProgramID, m3);
+	DrawSphere(gSphere, shaderProgramID, m3, glm::vec3(0.8f, 0.0f, 0.8f));
 
 	glutSwapBuffers();
 }
