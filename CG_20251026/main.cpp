@@ -14,8 +14,8 @@ GLvoid Reshape(int w, int h);
 
 Mesh gSphere;   // 중심의 구
 float angle_1 = 0.0f;
-float angle_2 = 45.0f;
-float angle_3 = -45.0f;
+float angle_2 = 0.0f;
+float angle_3 = 0.0f;
 
 void Timer(int value)
 {
@@ -146,6 +146,15 @@ GLvoid drawScene()
 	glm::mat4 m1 = glm::rotate(glm::mat4(1.0f), glm::radians(angle_1), glm::vec3(0.0f, 1.0f, 0.0f));
 	m1 = glm::translate(m1, glm::vec3(2.0f, 0.0f, 0.0f));
 	DrawSphere(gSphere, shaderProgramID, m1, glm::vec3(0.8f, 0.8f, 0.0f));
+
+	glm::vec3 m1Center = glm::vec3(m1[3]);   // x, y, z 위치 추출
+
+	glm::mat4 d1 = glm::mat4(1.0f);
+	d1 = glm::translate(d1, m1Center);
+	d1 = glm::rotate(d1, glm::radians(angle_3), glm::vec3(0.0f, 1.0f, 0.0f));
+	d1 = glm::translate(d1, glm::vec3(1.0f, 0.0f, 0.0f));
+	d1 = glm::scale(d1, glm::vec3(0.3f, 0.3f, 0.3f));
+	DrawSphere(gSphere, shaderProgramID, d1, glm::vec3(1.0f, 1.0f, 0.0f));
 
 	glm::mat4 m2 = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 1.0f));
 	m2 = glm::rotate(m2, glm::radians(angle_2), glm::vec3(0.0f, 1.0f, 0.0f));
