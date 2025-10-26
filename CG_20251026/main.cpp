@@ -119,13 +119,15 @@ GLvoid drawScene()
 
 
 	// 왼쪽 아래 구 (m2) - y축 회전 angle_2
-	glm::mat4 m2 = glm::rotate(glm::mat4(1.0f), glm::radians(angle_2), glm::vec3(0.0f, 1.0f, 0.0f));
-	m2 = glm::translate(m2, glm::vec3(-2.0f, -2.0, 0));
+	glm::mat4 m2 = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 1.0f)); // x축 기울기
+	m2 = glm::rotate(m2, glm::radians(angle_2), glm::vec3(0.0f, 1.0f, 0.0f)); // y축 회전
+	m2 = glm::translate(m2, glm::vec3(-3.0f, 0.0f, 0.0f));
 	DrawSphere(gSphere, shaderProgramID, m2, glm::vec3(0.0f, 0.8f, 0.8f));
 
 	// 오른쪽 아래 구 (m3) - y축 회전 angle_3
-	glm::mat4 m3 = glm::rotate(glm::mat4(1.0f), glm::radians(angle_3), glm::vec3(0.0f, 1.0f, 0.0f));
-	m3 = glm::translate(m3, glm::vec3(2.0f, -2.0f, 0.0f));
+	glm::mat4 m3 = glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 1.0f));
+	m3 = glm::rotate(m3, glm::radians(angle_3), glm::vec3(0.0f, 1.0f, 0.0f));
+	m3 = glm::translate(m3, glm::vec3(3.0f, 0.0f, 0.0f));
 	DrawSphere(gSphere, shaderProgramID, m3, glm::vec3(0.8f, 0.0f, 0.8f));
 
 	glutSwapBuffers();
