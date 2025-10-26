@@ -56,6 +56,7 @@ int main(int argc, char** argv)
 	make_vertexShaders();
 	make_fragmentShaders();
 	shaderProgramID = make_shaderProgram();
+	InitOrbitMesh();
 
 	// obj 파일 로드
 	if (!LoadOBJ_PosNorm_Interleaved("sphere.obj", gSphere)) 
@@ -69,6 +70,31 @@ int main(int argc, char** argv)
 
 	glutMainLoop();
 	return 0;
+}
+
+// 궤도 그리는 함수
+void DrawOrbit(GLuint shaderProgramID,
+float rx, float rz,
+const glm::vec3& center,
+float tiltX_deg, float tiltZ_deg,
+const glm::vec3& color)
+{
+	glm::mat4 M(1.0f);
+	M = glm::translate(M, center);                         // 위치
+	M = glm::rotate(M, glm::radians(tiltX_deg), { 1,0,0 });  // x로 기울이기
+	M = glm::rotate(M, glm::radians(tiltZ_deg), { 0,0,1 });  // z로 기울이기 (대각선 느낌)
+	M = glm::scale(M, glm::vec3(rx, 1.0f, rz));            // 타원 크기
+
+	GLint modelLoc = glGetUniformLocation(shaderProgramID, "model");
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &M[0][0]);
+
+	GLint colorLoc = glGetUniformLocation(shaderProgramID, "vColor");
+	if (colorLoc >= 0) glUniform3fv(colorLoc, 1, &color[0]);  // 선 색상(셰이더에 따라)
+
+	glLineWidth(1.0f);
+	glBindVertexArray(orbitVAO);
+	glDrawArrays(GL_LINE_LOOP, 0, ORBIT_SEG);
+	glBindVertexArray(0);
 }
 
 // 구 그리는 함수
@@ -108,23 +134,25 @@ GLvoid drawScene()
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, &pTransform[0][0]);
 
 	// 중심 구
-	glm::mat4 center = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	center = glm::scale(center, glm::vec3(2.0f, 2.0f, 2.0f));
-	DrawSphere(gSphere, shaderProgramID, center, glm::vec3(0.8f, 0.8f, 0.8f));
+	glm::mat4 centerM = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	centerM = glm::scale(centerM, glm::vec3(2.0f, 2.0f, 2.0f));
+	DrawSphere(gSphere, shaderProgramID, centerM, glm::vec3(0.8f, 0.8f, 0.8f));
 
-	// 오른쪽 구 (m1) - y축 회전 angle_1
+	// 궤도 그리기
+	glm::vec3 center(0, 0, 0);
+	DrawOrbit(shaderProgramID, 2.0f, 2.0f, center, 2.0f, 0.0f, { 0.0f, 0.0f, 0.0f });
+	DrawOrbit(shaderProgramID, 3.0f, 3.0f, center, 45.0f, 45.0f, { 0.0f, 0.0f, 0.0f });
+	DrawOrbit(shaderProgramID, 3.0f, 3.0f, center, -45.0f, -45.0, { 0.0f, 0.0f, 0.0f });
+
 	glm::mat4 m1 = glm::rotate(glm::mat4(1.0f), glm::radians(angle_1), glm::vec3(0.0f, 1.0f, 0.0f));
 	m1 = glm::translate(m1, glm::vec3(2.0f, 0.0f, 0.0f));
 	DrawSphere(gSphere, shaderProgramID, m1, glm::vec3(0.8f, 0.8f, 0.0f));
 
-
-	// 왼쪽 아래 구 (m2) - y축 회전 angle_2
-	glm::mat4 m2 = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 1.0f)); // x축 기울기
-	m2 = glm::rotate(m2, glm::radians(angle_2), glm::vec3(0.0f, 1.0f, 0.0f)); // y축 회전
+	glm::mat4 m2 = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 1.0f));
+	m2 = glm::rotate(m2, glm::radians(angle_2), glm::vec3(0.0f, 1.0f, 0.0f));
 	m2 = glm::translate(m2, glm::vec3(-3.0f, 0.0f, 0.0f));
 	DrawSphere(gSphere, shaderProgramID, m2, glm::vec3(0.0f, 0.8f, 0.8f));
 
-	// 오른쪽 아래 구 (m3) - y축 회전 angle_3
 	glm::mat4 m3 = glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 1.0f));
 	m3 = glm::rotate(m3, glm::radians(angle_3), glm::vec3(0.0f, 1.0f, 0.0f));
 	m3 = glm::translate(m3, glm::vec3(3.0f, 0.0f, 0.0f));
