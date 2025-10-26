@@ -13,6 +13,18 @@ GLvoid drawScene();
 GLvoid Reshape(int w, int h);
 
 Mesh gSphere;   // 중심의 구
+float angle_1 = 0.0f;
+float angle_2 = 45.0f;
+float angle_3 = -45.0f;
+
+void Timer(int value)
+{
+	angle_1 += 1.0f;
+	angle_2 += 2.0f;
+	angle_3 += 3.0f;
+	glutPostRedisplay();
+	glutTimerFunc(16, Timer, 0);
+}
 
 GLvoid Keyboard(unsigned char key, int x, int y)
 {
@@ -23,7 +35,6 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 		break;
 	}
 }
-
 
 int main(int argc, char** argv)
 {
@@ -54,6 +65,8 @@ int main(int argc, char** argv)
 	}
 
 	glutKeyboardFunc(Keyboard);
+	glutTimerFunc(0, Timer, 0);
+
 	glutMainLoop();
 	return 0;
 }
@@ -99,16 +112,20 @@ GLvoid drawScene()
 	center = glm::scale(center, glm::vec3(2.0f, 2.0f, 2.0f));
 	DrawSphere(gSphere, shaderProgramID, center, glm::vec3(0.8f, 0.8f, 0.8f));
 
-	// 오른쪽 구
-	glm::mat4 m1 = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
+	// 오른쪽 구 (m1) - y축 회전 angle_1
+	glm::mat4 m1 = glm::rotate(glm::mat4(1.0f), glm::radians(angle_1), glm::vec3(0.0f, 1.0f, 0.0f));
+	m1 = glm::translate(m1, glm::vec3(2.0f, 0.0f, 0.0f));
 	DrawSphere(gSphere, shaderProgramID, m1, glm::vec3(0.8f, 0.8f, 0.0f));
 
-	// 왼쪽 아래 구
-	glm::mat4 m2 = glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, -2.0f, 0.0f));
+
+	// 왼쪽 아래 구 (m2) - y축 회전 angle_2
+	glm::mat4 m2 = glm::rotate(glm::mat4(1.0f), glm::radians(angle_2), glm::vec3(0.0f, 1.0f, 0.0f));
+	m2 = glm::translate(m2, glm::vec3(-2.0f, -2.0, 0));
 	DrawSphere(gSphere, shaderProgramID, m2, glm::vec3(0.0f, 0.8f, 0.8f));
 
-	// 오른쪽 아래 구
-	glm::mat4 m3 = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, -2.0f, 0.0f));
+	// 오른쪽 아래 구 (m3) - y축 회전 angle_3
+	glm::mat4 m3 = glm::rotate(glm::mat4(1.0f), glm::radians(angle_3), glm::vec3(0.0f, 1.0f, 0.0f));
+	m3 = glm::translate(m3, glm::vec3(2.0f, -2.0f, 0.0f));
 	DrawSphere(gSphere, shaderProgramID, m3, glm::vec3(0.8f, 0.0f, 0.8f));
 
 	glutSwapBuffers();
