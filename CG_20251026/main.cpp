@@ -23,6 +23,10 @@ bool wireMode = false;   // false: 솔리드 모드, true: 와이어 모드
 float currentRadius = 3.0f;
 float moonRadius = 1.0f;
 
+float moveX = 0.0f;
+float moveY = 0.0f;
+float moveStep = 0.1f;
+
 void Timer(int value)
 {
 	angle_1 += 1.0f;
@@ -63,10 +67,10 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 	{
 	case 'p': orthoMode = !orthoMode; break;
 	case 'm': wireMode = !wireMode;  SetWireMode(wireMode); break;
-	case 'w': break;
-	case 'a': break;
-	case 's': break;
-	case 'd': break;
+	case 'w': moveY += moveStep; glutPostRedisplay(); break;
+	case 'a': moveX -= moveStep; glutPostRedisplay(); break;
+	case 's':  moveY -= moveStep; glutPostRedisplay(); break;
+	case 'd': moveX += moveStep; glutPostRedisplay(); break;
 	case '+': break;
 	case '-': break;
 	case 'y': IncreaseRadius(-0.5f); IncreaseMoonRadius(-0.2f); break;
@@ -197,16 +201,19 @@ GLvoid drawScene()
 
 	glm::mat4 m1 = glm::rotate(glm::mat4(1.0f), glm::radians(angle_1), glm::vec3(0.0f, 1.0f, 0.0f));
 	m1 = glm::translate(m1, glm::vec3(currentRadius, 0.0f, 0.0f));
+	m1 = glm::translate(m1, glm::vec3(moveX, moveY, 0.0f));
 	DrawSphere(gSphere, shaderProgramID, m1, glm::vec3(0.8f, 0.8f, 0.0f));
 
 	glm::mat4 m2 = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 1.0f));
 	m2 = glm::rotate(m2, glm::radians(angle_2), glm::vec3(0.0f, 1.0f, 0.0f));
 	m2 = glm::translate(m2, glm::vec3(-currentRadius, 0.0f, 0.0f));
+	m2 = glm::translate(m2, glm::vec3(moveX, moveY, 0.0f));
 	DrawSphere(gSphere, shaderProgramID, m2, glm::vec3(0.0f, 0.8f, 0.8f));
 
 	glm::mat4 m3 = glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 1.0f));
 	m3 = glm::rotate(m3, glm::radians(angle_3), glm::vec3(0.0f, 1.0f, 0.0f));
 	m3 = glm::translate(m3, glm::vec3(currentRadius, 0.0f, 0.0f));
+	m3 = glm::translate(m3, glm::vec3(moveX, moveY, 0.0f));
 	DrawSphere(gSphere, shaderProgramID, m3, glm::vec3(0.8f, 0.0f, 0.8f));
 
 	glm::vec3 m1Center = glm::vec3(m1[3]);   // x, y, z 위치 추출
