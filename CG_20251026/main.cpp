@@ -211,20 +211,20 @@ GLvoid drawScene()
 	DrawOrbit(shaderProgramID, currentRadius, currentRadius, center, 45.0f, { 0.0f, 0.0f, 0.0f });
 	DrawOrbit(shaderProgramID, currentRadius, currentRadius, center, -45.0f, { 0.0f, 0.0f, 0.0f });
 
-	glm::mat4 m1 = glm::translate(glm::mat4(1.0f), glm::vec3(moveX, moveY, moveZ));
+	glm::mat4 m1 = glm::translate(glm::mat4(1.0f), glm::vec3(center));
 	m1 = glm::rotate(m1, glm::radians(angle_1), glm::vec3(0.0f, 1.0f, 0.0f));
-	m1 = glm::rotate(m1, glm::radians(angleZ), glm::vec3(0.0f, 0.0f, 1.0f));
+	m1 = glm::rotate(m1, glm::radians(angleZ), glm::vec3(0.0f, 0.0f, 1.0f)); // z축 회전 먼저
 	m1 = glm::translate(m1, glm::vec3(currentRadius, 0.0f, 0.0f));
 	DrawSphere(gSphere, shaderProgramID, m1, glm::vec3(0.8f, 0.8f, 0.0f));
 
-	glm::mat4 m2 = glm::translate(glm::mat4(1.0f), glm::vec3(moveX, moveY, moveZ));
+	glm::mat4 m2 = glm::translate(glm::mat4(1.0f), glm::vec3(center));
 	m2 = glm::rotate(m2, glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 1.0f));
 	m2 = glm::rotate(m2, glm::radians(angle_2), glm::vec3(0.0f, 1.0f, 0.0f));
 	m2 = glm::rotate(m2, glm::radians(angleZ), glm::vec3(0.0f, 0.0f, 1.0f));
 	m2 = glm::translate(m2, glm::vec3(-currentRadius, 0.0f, 0.0f));
 	DrawSphere(gSphere, shaderProgramID, m2, glm::vec3(0.0f, 0.8f, 0.8f));
 
-	glm::mat4 m3 = glm::translate(glm::mat4(1.0f), glm::vec3(moveX, moveY, moveZ));
+	glm::mat4 m3 = glm::translate(glm::mat4(1.0f), glm::vec3(center));
 	m3 = glm::rotate(m3, glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 1.0f));
 	m3 = glm::rotate(m3, glm::radians(angle_3), glm::vec3(0.0f, 1.0f, 0.0f));
 	m3 = glm::rotate(m3, glm::radians(angleZ), glm::vec3(0.0f, 0.0f, 1.0f));
