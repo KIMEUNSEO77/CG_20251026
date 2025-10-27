@@ -32,6 +32,7 @@ int main(int argc, char** argv)
 	glewInit();
 
 	glEnable(GL_DEPTH_TEST); // ±íÀÌ Å×½ºÆ® È°¼ºÈ­
+	glEnable(GL_CULL_FACE);  // Àº¸é Á¦°Å È°¼ºÈ­
 
 	make_vertexShaders();
 	make_fragmentShaders();
@@ -80,43 +81,50 @@ GLvoid drawScene()
 	glm::mat4 pTransform = glm::mat4(1.0f);
 	pTransform = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, &pTransform[0][0]);
+
+	// ¹Ù´Ú
+	glm::mat4 ground = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f));
+	// ground = glm::rotate(ground, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	ground = glm::rotate(ground, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	ground = glm::scale(ground, glm::vec3(100.0f, 0.05f, 100.0f)); // ³Ð°í ¾ãÀº ¹Ù´Ú
+	DrawCube(gTank, shaderProgramID, ground, glm::vec3(1.0f, 0.713f, 0.756f));
 	
 	// ¾Æ·¡ ¸öÃ¼
 	glm::mat4 bottomBody = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	bottomBody = glm::rotate(bottomBody, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	bottomBody = glm::rotate(bottomBody, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	bottomBody = glm::scale(bottomBody, glm::vec3(3.0f, 0.5f, 1.0f));
-	DrawCube(gTank, shaderProgramID, bottomBody, glm::vec3(0.5f, 0.5f, 0.5f));
+	DrawCube(gTank, shaderProgramID, bottomBody, glm::vec3(0.678f, 0.847f, 0.902f));
 	// Áß¾Ó ¸öÃ¼
 	glm::mat4 middleBody = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.3f, 0.0f));
 	middleBody = glm::rotate(middleBody, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	middleBody = glm::rotate(middleBody, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	middleBody = glm::scale(middleBody, glm::vec3(1.5f, 0.25f, 0.5f));
-	DrawCube(gTank, shaderProgramID, middleBody, glm::vec3(0.8f, 0.8f, 0.8f));
+	DrawCube(gTank, shaderProgramID, middleBody, glm::vec3(0.564f, 0.933f, 0.564f));
 	// ¿ÞÂÊ À§ ¸öÃ¼
 	glm::mat4 topBody1 = glm::translate(glm::mat4(1.0f), glm::vec3(-0.7f, 0.7f, 0.5f));
 	topBody1 = glm::rotate(topBody1, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	topBody1 = glm::rotate(topBody1, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	topBody1 = glm::scale(topBody1, glm::vec3(0.75f, 0.5f, 0.5f));
-	DrawCube(gTank, shaderProgramID, topBody1, glm::vec3(0.0f, 0.8f, 0.0f));
+	DrawCube(gTank, shaderProgramID, topBody1, glm::vec3(0.784f, 0.635f, 0.784f));
 	// ¿À¸¥ÂÊ À§ ¸öÃ¼
 	glm::mat4 topBody2 = glm::translate(glm::mat4(1.0f), glm::vec3(0.7f, 0.7f, 0.5f));
 	topBody2 = glm::rotate(topBody2, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	topBody2 = glm::rotate(topBody2, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	topBody2 = glm::scale(topBody2, glm::vec3(0.75f, 0.5f, 0.5f));
-	DrawCube(gTank, shaderProgramID, topBody2, glm::vec3(0.0f, 0.8f, 0.0f));
+	DrawCube(gTank, shaderProgramID, topBody2, glm::vec3(0.784f, 0.635f, 0.784f));
 	// ¿ÞÂÊ ±ê´ë
 	glm::mat4 flag1 = glm::translate(glm::mat4(1.0f), glm::vec3(-0.7f, 1.3f, 0.5f));
 	flag1 = glm::rotate(flag1, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	flag1 = glm::rotate(flag1, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	flag1 = glm::scale(flag1, glm::vec3(0.1f, 1.0f, 0.1f));
-	DrawCube(gTank, shaderProgramID, flag1, glm::vec3(0.6f, 0.3f, 0.0f));
+	DrawCube(gTank, shaderProgramID, flag1, glm::vec3(1.0f, 0.7f, 0.3f));
 	// ¿À¸¥ÂÊ ±ê´ë
 	glm::mat4 flag2 = glm::translate(glm::mat4(1.0f), glm::vec3(0.7f, 1.3f, 0.5f));
 	flag2 = glm::rotate(flag2, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	flag2 = glm::rotate(flag2, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	flag2 = glm::scale(flag2, glm::vec3(0.1f, 1.0f, 0.1f));
-	DrawCube(gTank, shaderProgramID, flag2, glm::vec3(0.6f, 0.3f, 0.0f));
+	DrawCube(gTank, shaderProgramID, flag2, glm::vec3(1.0f, 0.7f, 0.3f));
 	// ¿ÞÂÊ Æ÷½Å
 	glm::mat4 barrel1 = glm::translate(glm::mat4(1.0f), glm::vec3(-0.7f, 0.5f, 1.5f));
 	barrel1 = glm::rotate(barrel1, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
