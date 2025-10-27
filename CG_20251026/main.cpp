@@ -28,11 +28,18 @@ float moveY = 0.0f;
 float moveZ = 0.0f;
 float moveStep = 0.1f;
 
+float angleZ = 0.0f;
+bool rotatingZ = false;  // z축 회전 여부
+int dirZ = 1;        // z축 회전 방향 1: 양, -1: 음
+
 void Timer(int value)
 {
 	angle_1 += 1.0f;
 	angle_2 += 2.0f;
 	angle_3 += 3.0f;
+
+	if (rotatingZ) angleZ += dirZ * 2.0f;
+	
 	glutPostRedisplay();
 	glutTimerFunc(16, Timer, 0);
 }
@@ -76,8 +83,8 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 	case '-': moveZ -= moveStep; glutPostRedisplay(); break;
 	case 'y': IncreaseRadius(-0.5f); IncreaseMoonRadius(-0.2f); break;
 	case 'Y': IncreaseRadius(0.5f); IncreaseMoonRadius(0.2f); break;
-	case 'z': break;
-	case 'Z': break;
+	case 'z': rotatingZ = !rotatingZ; dirZ = 1; break;
+	case 'Z': dirZ = -1; break;
 
 	case 'q':
 		exit(0);
@@ -131,6 +138,7 @@ void DrawOrbit(GLuint shaderProgramID,
 	glm::mat4 M(1.0f);
 	M = glm::translate(M, center);                         // 위치
 	M = glm::rotate(M, glm::radians(angle), { 1,0,1 });  // x, z축 기울이기
+	M = glm::rotate(M, glm::radians(angleZ), glm::vec3(0.0f, 0.0f, 1.0f)); // z축 회전
 	M = glm::scale(M, glm::vec3(rx, 1.0f, rz));            // 타원 크기
 
 	GLint modelLoc = glGetUniformLocation(shaderProgramID, "model");
@@ -205,18 +213,21 @@ GLvoid drawScene()
 
 	glm::mat4 m1 = glm::translate(glm::mat4(1.0f), glm::vec3(moveX, moveY, moveZ));
 	m1 = glm::rotate(m1, glm::radians(angle_1), glm::vec3(0.0f, 1.0f, 0.0f));
+	m1 = glm::rotate(m1, glm::radians(angleZ), glm::vec3(0.0f, 0.0f, 1.0f));
 	m1 = glm::translate(m1, glm::vec3(currentRadius, 0.0f, 0.0f));
 	DrawSphere(gSphere, shaderProgramID, m1, glm::vec3(0.8f, 0.8f, 0.0f));
 
 	glm::mat4 m2 = glm::translate(glm::mat4(1.0f), glm::vec3(moveX, moveY, moveZ));
 	m2 = glm::rotate(m2, glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 1.0f));
 	m2 = glm::rotate(m2, glm::radians(angle_2), glm::vec3(0.0f, 1.0f, 0.0f));
+	m2 = glm::rotate(m2, glm::radians(angleZ), glm::vec3(0.0f, 0.0f, 1.0f));
 	m2 = glm::translate(m2, glm::vec3(-currentRadius, 0.0f, 0.0f));
 	DrawSphere(gSphere, shaderProgramID, m2, glm::vec3(0.0f, 0.8f, 0.8f));
 
 	glm::mat4 m3 = glm::translate(glm::mat4(1.0f), glm::vec3(moveX, moveY, moveZ));
 	m3 = glm::rotate(m3, glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 1.0f));
 	m3 = glm::rotate(m3, glm::radians(angle_3), glm::vec3(0.0f, 1.0f, 0.0f));
+	m3 = glm::rotate(m3, glm::radians(angleZ), glm::vec3(0.0f, 0.0f, 1.0f));
 	m3 = glm::translate(m3, glm::vec3(currentRadius, 0.0f, 0.0f));
 	DrawSphere(gSphere, shaderProgramID, m3, glm::vec3(0.8f, 0.0f, 0.8f));
 
@@ -231,6 +242,7 @@ GLvoid drawScene()
 	glm::mat4 d1 = glm::mat4(1.0f);
 	d1 = glm::translate(d1, m1Center);
 	d1 = glm::rotate(d1, glm::radians(angle_3), glm::vec3(0.0f, 1.0f, 0.0f));
+	d1 = glm::rotate(d1, glm::radians(angleZ), glm::vec3(0.0f, 0.0f, 1.0f));
 	d1 = glm::translate(d1, glm::vec3(moonRadius, 0.0f, 0.0f));
 	d1 = glm::scale(d1, glm::vec3(0.3f, 0.3f, 0.3f));
 	DrawSphere(gSphere, shaderProgramID, d1, glm::vec3(1.0f, 1.0f, 0.0f));
@@ -239,6 +251,7 @@ GLvoid drawScene()
 	d2 = glm::translate(d2, m2Center);
 	d2 = glm::rotate(d2, glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 1.0f));
 	d2 = glm::rotate(d2, glm::radians(angle_3), glm::vec3(0.0f, 1.0f, 0.0f));
+	d2 = glm::rotate(d2, glm::radians(angleZ), glm::vec3(0.0f, 0.0f, 1.0f));
 	d2 = glm::translate(d2, glm::vec3(-moonRadius, 0.0f, 0.0f));
 	d2 = glm::scale(d2, glm::vec3(0.3f, 0.3f, 0.3f));
 	DrawSphere(gSphere, shaderProgramID, d2, glm::vec3(0.0f, 0.5f, 0.5f));
@@ -247,6 +260,7 @@ GLvoid drawScene()
 	d3 = glm::translate(d3, m3Center);
 	d3 = glm::rotate(d3, glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 1.0f));
 	d3 = glm::rotate(d3, glm::radians(angle_3), glm::vec3(0.0f, 1.0f, 0.0f));
+	d3 = glm::rotate(d3, glm::radians(angleZ), glm::vec3(0.0f, 0.0f, 1.0f));
 	d3 = glm::translate(d3, glm::vec3(moonRadius, 0.0f, 0.0f));
 	d3 = glm::scale(d3, glm::vec3(0.3f, 0.3f, 0.3f));
 	DrawSphere(gSphere, shaderProgramID, d3, glm::vec3(0.5f, 0.0f, 0.5f));
