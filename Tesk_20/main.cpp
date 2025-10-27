@@ -117,6 +117,18 @@ GLvoid drawScene()
 	flag2 = glm::rotate(flag2, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	flag2 = glm::scale(flag2, glm::vec3(0.1f, 1.0f, 0.1f));
 	DrawCube(gTank, shaderProgramID, flag2, glm::vec3(0.6f, 0.3f, 0.0f));
+	// 왼쪽 포신
+	glm::mat4 barrel1 = glm::translate(glm::mat4(1.0f), glm::vec3(-0.7f, 0.5f, 1.5f));
+	barrel1 = glm::rotate(barrel1, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	barrel1 = glm::rotate(barrel1, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	barrel1 = glm::scale(barrel1, glm::vec3(0.1f, 0.1f, 1.0f));
+	DrawCube(gTank, shaderProgramID, barrel1, glm::vec3(0.5f, 0.0f, 0.5f));
+	// 오른쪽 포신
+	glm::mat4 barrel2 = glm::translate(glm::mat4(1.0f), glm::vec3(0.7f, 0.5f, 1.5f));
+	barrel2 = glm::rotate(barrel2, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	barrel2 = glm::rotate(barrel2, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	barrel2 = glm::scale(barrel2, glm::vec3(0.1f, 0.1f, 1.0f));
+	DrawCube(gTank, shaderProgramID, barrel2, glm::vec3(0.5f, 0.0f, 0.5f));
 
 	glutSwapBuffers();
 }
