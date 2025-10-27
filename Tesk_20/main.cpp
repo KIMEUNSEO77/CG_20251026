@@ -16,13 +16,22 @@ GLvoid drawScene();
 GLvoid Reshape(int w, int h);
 
 Mesh gTank;
-float moveX = 0.0f;
-float moveZ = 0.0f;
+float moveX = 0.0f; float moveZ = 0.0f;
+// Áß¾Ó ¸öÃ¼ yÃà È¸Àü
+bool middleRotatingY = false;
+float angleY = 0.0f;
 
+void Timer(int value)
+{
+	if (middleRotatingY) angleY += 1.0f;
+	glutPostRedisplay();
+	glutTimerFunc(16, Timer, 0);
+}
 GLvoid Keyboard(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
+	case 't': middleRotatingY = !middleRotatingY; break;
 	case 'q': exit(0); break;
 	}
 }
@@ -67,6 +76,8 @@ int main(int argc, char** argv)
 
 	glutKeyboardFunc(Keyboard);
 	glutSpecialFunc(SpecialKeyboard);
+	glutTimerFunc(0, Timer, 0);
+
 	glutMainLoop();
 	return 0;
 }
@@ -108,7 +119,7 @@ GLvoid drawScene()
 
 	// ¹Ù´Ú
 	glm::mat4 ground = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f));
-	// ground = glm::rotate(ground, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	ground = glm::rotate(ground, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	ground = glm::rotate(ground, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	ground = glm::scale(ground, glm::vec3(100.0f, 0.05f, 100.0f)); // ³Ð°í ¾ãÀº ¹Ù´Ú
 	DrawCube(gTank, shaderProgramID, ground, glm::vec3(1.0f, 0.713f, 0.756f));
@@ -120,13 +131,17 @@ GLvoid drawScene()
 	bottomBody = glm::translate(bottomBody, glm::vec3(moveX, 0.0f, moveZ));
 	bottomBody = glm::scale(bottomBody, glm::vec3(3.0f, 0.5f, 1.0f));
 	DrawCube(gTank, shaderProgramID, bottomBody, glm::vec3(0.678f, 0.847f, 0.902f));
+
 	// Áß¾Ó ¸öÃ¼
 	glm::mat4 middleBody = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.3f, 0.0f));
+	// middleBody = glm::translate(middleBody, glm::vec3(moveX, 0.0f, moveZ));
 	middleBody = glm::rotate(middleBody, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	middleBody = glm::rotate(middleBody, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	middleBody = glm::rotate(middleBody, glm::radians(angleY), glm::vec3(0.0f, 1.0f, 0.0f));
 	middleBody = glm::translate(middleBody, glm::vec3(moveX, 0.0f, moveZ));
 	middleBody = glm::scale(middleBody, glm::vec3(1.5f, 0.25f, 0.5f));
 	DrawCube(gTank, shaderProgramID, middleBody, glm::vec3(0.564f, 0.933f, 0.564f));
+
 	// ¿ÞÂÊ À§ ¸öÃ¼
 	glm::mat4 topBody1 = glm::translate(glm::mat4(1.0f), glm::vec3(-0.7f, 0.7f, 0.5f));
 	topBody1 = glm::rotate(topBody1, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
