@@ -81,10 +81,19 @@ GLvoid drawScene()
 	pTransform = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, &pTransform[0][0]);
 	
-	// Áß½É ±¸
-	glm::mat4 centerM = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	centerM = glm::scale(centerM, glm::vec3(2.0f, 0.5f, 0.5f));
-	DrawCube(gTank, shaderProgramID, centerM, glm::vec3(0.8f, 0.8f, 0.8f));
+	// ¾Æ·¡ ¸öÃ¼
+	glm::mat4 bottomBody = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	bottomBody = glm::rotate(bottomBody, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	bottomBody = glm::rotate(bottomBody, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	bottomBody = glm::scale(bottomBody, glm::vec3(3.0f, 0.5f, 1.0f));
+	DrawCube(gTank, shaderProgramID, bottomBody, glm::vec3(0.5f, 0.5f, 0.5f));
+
+	// Áß¾Ó ¸öÃ¼
+	glm::mat4 middleBody = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.3f, 0.0f));
+	middleBody = glm::rotate(middleBody, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	middleBody = glm::rotate(middleBody, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	middleBody = glm::scale(middleBody, glm::vec3(1.5f, 0.25f, 0.5f));
+	DrawCube(gTank, shaderProgramID, middleBody, glm::vec3(0.8f, 0.8f, 0.8f));
 
 	glutSwapBuffers();
 }
