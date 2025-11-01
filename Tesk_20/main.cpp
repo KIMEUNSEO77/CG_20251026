@@ -21,9 +21,23 @@ float moveX = 0.0f; float moveZ = 0.0f;
 bool middleRotatingY = false;
 float angleY = 0.0f;
 
+bool rotatingCameraZ = false;
+float angleCameraZ = 0.0f;
+int dirCameraZ = 1;   // 1: 양, -1: 음
+
+bool rotatingCameraX = false;
+float angleCameraX = 0.0f;
+int dirCameraX = 1;   // 1: 양, -1: 음
+
 void Timer(int value)
 {
 	if (middleRotatingY) angleY += 1.0f;
+	if (rotatingCameraZ) angleCameraZ += dirCameraZ * 2.0f;
+	if (rotatingCameraX) angleCameraX += dirCameraX * 2.0f;
+
+	if (!rotatingCameraZ) angleCameraZ = 0.0f;
+	if (!rotatingCameraX) angleCameraX = 0.0f;
+
 	glutPostRedisplay();
 	glutTimerFunc(16, Timer, 0);
 }
@@ -32,6 +46,10 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 	switch (key)
 	{
 	case 't': middleRotatingY = !middleRotatingY; break;
+	case 'z': rotatingCameraZ = !rotatingCameraZ; dirCameraZ = 1; rotatingCameraX = false; break;
+	case 'Z': rotatingCameraZ = !rotatingCameraZ; dirCameraZ = -1; rotatingCameraX = false; break;
+	case 'x': rotatingCameraX = !rotatingCameraX; dirCameraX = 1; rotatingCameraZ = false; break;
+	case 'X': rotatingCameraX = !rotatingCameraX; dirCameraX = -1; rotatingCameraZ = false; break;
 	case 'q': exit(0); break;
 	}
 }
@@ -106,11 +124,22 @@ GLvoid drawScene()
 	GLint projLoc = glGetUniformLocation(shaderProgramID, "projection");
 
 	glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 8.0f);
-	glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+	//glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, 0.0f);
+	//glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+	float radZ = glm::radians(angleCameraZ);
+	float radX = glm::radians(angleCameraX);
+
+	// pitch 적용: 카메라가 바라보는 방향을 x축 기준으로 회전
+	glm::vec3 cameraDirection = glm::vec3(
+		0.0f,
+		-sin(radX),         // 위/아래로 기울임
+		-cos(radX)          // z축 방향
+	);
+	glm::vec3 cameraUp = glm::vec3(sin(radZ), cos(radZ), 0.0f);
 
 	glm::mat4 vTransform = glm::mat4(1.0f);
-	vTransform = glm::lookAt(cameraPos, cameraDirection, cameraUp);
+	vTransform = glm::lookAt(cameraPos, cameraPos+cameraDirection, cameraUp);
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &vTransform[0][0]);
 
 	glm::mat4 pTransform = glm::mat4(1.0f);
