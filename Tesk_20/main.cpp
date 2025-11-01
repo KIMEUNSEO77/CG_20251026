@@ -9,6 +9,8 @@
 #include "shaderMaker.h"
 #include "obj_load.h"
 
+#include <chrono>
+
 void make_vertexShaders();
 void make_fragmentShaders();
 GLuint make_shaderProgram();
@@ -35,6 +37,13 @@ float angleCameraY = 0.0f;
 bool rotatingCameraCenterY = false;
 float angleCameraCenterY = 0.0f;
 
+bool rotatingAnimation = false;
+bool waitingAnimation = false;
+std::chrono::steady_clock::time_point animationWaitStart;
+
+bool waitingAfterFullRotation = false;
+std::chrono::steady_clock::time_point fullRotationWaitStart;
+
 void Timer(int value)
 {
 	if (middleRotatingY) angleY += 1.0f;
@@ -43,9 +52,73 @@ void Timer(int value)
 	if (rotatingCameraY) angleCameraY += 2.0f;
 	if (rotatingCameraCenterY) angleCameraCenterY += 2.0f;
 
+	if (waitingAnimation)
+	{
+		auto now = std::chrono::steady_clock::now();
+		auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - animationWaitStart).count();
+		if (elapsed >= 2000) 
+		{ // 2초(2000ms) 경과
+			rotatingAnimation = true;
+			waitingAnimation = false;
+		}
+	}
+	if (rotatingAnimation)
+	{
+		if (!waitingAfterFullRotation) {
+			rotatingCameraCenterY = true;
+			angleCameraCenterY += 2.0f;
+			if (angleCameraCenterY >= 360.0f) {
+				angleCameraCenterY = 360.0f; // 정확히 360도에서 멈춤
+				rotatingCameraCenterY = false;
+				waitingAfterFullRotation = true;
+				fullRotationWaitStart = std::chrono::steady_clock::now();
+			}
+		}
+		else {
+			// 2초 대기
+			auto now = std::chrono::steady_clock::now();
+			auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - fullRotationWaitStart).count();
+			if (elapsed >= 200) {
+				angleCameraCenterY = 0.0f;
+				waitingAfterFullRotation = false;
+				rotatingCameraCenterY = true;
+			}
+		}
+	}
+
 	glutPostRedisplay();
 	glutTimerFunc(16, Timer, 0);
 }
+
+void StopAllRotations()
+{
+	middleRotatingY = false;
+	rotatingCameraZ = false;
+	rotatingCameraX = false;
+	rotatingCameraY = false;
+	rotatingCameraCenterY = false;
+
+	glutPostRedisplay();
+}
+
+
+void Reset()
+{
+	middleRotatingY = false;
+	angleY = 0.0f;
+	rotatingCameraZ = false;
+	angleCameraZ = 0.0f;
+	rotatingCameraX = false;
+	angleCameraX = 0.0f;
+	rotatingCameraY = false;
+	angleCameraY = 0.0f;
+	rotatingCameraCenterY = false;
+	angleCameraCenterY = 0.0f;
+	moveX = 0.0f; moveZ = 0.0f;
+
+	glutPostRedisplay();
+}
+
 GLvoid Keyboard(unsigned char key, int x, int y)
 {
 	switch (key)
@@ -57,6 +130,19 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 	case 'X': rotatingCameraX = !rotatingCameraX; dirCameraX = -1; rotatingCameraZ = false; rotatingCameraY = false; break;
 	case 'y': rotatingCameraY = !rotatingCameraY; rotatingCameraX = false; rotatingCameraZ = false; break;
 	case 'r': rotatingCameraCenterY = !rotatingCameraCenterY; rotatingCameraX = false; rotatingCameraZ = false; rotatingCameraY = false; break;
+	case 'a': 
+		if (!rotatingAnimation && !waitingAnimation)
+		{
+			waitingAnimation = true;
+			animationWaitStart = std::chrono::steady_clock::now();
+		}
+		else if (rotatingAnimation)
+		{
+			rotatingAnimation = false;
+		} break;
+
+	case 'o': StopAllRotations(); break;
+	case 'c': Reset(); break;
 	case 'q': exit(0); break;
 	}
 }
