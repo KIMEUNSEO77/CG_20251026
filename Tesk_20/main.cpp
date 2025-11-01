@@ -32,16 +32,16 @@ int dirCameraX = 1;   // 1: 양, -1: 음
 bool rotatingCameraY = false;
 float angleCameraY = 0.0f;
 
+bool rotatingCameraCenterY = false;
+float angleCameraCenterY = 0.0f;
+
 void Timer(int value)
 {
 	if (middleRotatingY) angleY += 1.0f;
 	if (rotatingCameraZ) angleCameraZ += dirCameraZ * 2.0f;
 	if (rotatingCameraX) angleCameraX += dirCameraX * 2.0f;
 	if (rotatingCameraY) angleCameraY += 2.0f;
-
-	if (!rotatingCameraZ) angleCameraZ = 0.0f;
-	if (!rotatingCameraX) angleCameraX = 0.0f;
-	if (!rotatingCameraY) angleCameraY = 0.0f;
+	if (rotatingCameraCenterY) angleCameraCenterY += 2.0f;
 
 	glutPostRedisplay();
 	glutTimerFunc(16, Timer, 0);
@@ -56,6 +56,7 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 	case 'x': rotatingCameraX = !rotatingCameraX; dirCameraX = 1; rotatingCameraZ = false; rotatingCameraY = false; break;
 	case 'X': rotatingCameraX = !rotatingCameraX; dirCameraX = -1; rotatingCameraZ = false; rotatingCameraY = false; break;
 	case 'y': rotatingCameraY = !rotatingCameraY; rotatingCameraX = false; rotatingCameraZ = false; break;
+	case 'r': rotatingCameraCenterY = !rotatingCameraCenterY; rotatingCameraX = false; rotatingCameraZ = false; rotatingCameraY = false; break;
 	case 'q': exit(0); break;
 	}
 }
@@ -129,24 +130,44 @@ GLvoid drawScene()
 	GLint viewLoc = glGetUniformLocation(shaderProgramID, "view");
 	GLint projLoc = glGetUniformLocation(shaderProgramID, "projection");
 
-	glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 8.0f);
+	//glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 8.0f);
 	//glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, 0.0f);
 	//glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 	float radZ = glm::radians(angleCameraZ);
 	float radX = glm::radians(angleCameraX);
 	float radY = glm::radians(angleCameraY);
+	float radiusCenterY = 8.0f;   // 공전 반지름
+	float radCenterY = glm::radians(angleCameraCenterY);
 
-	// yaw(y축), pitch(x축) 모두 적용한 카메라 방향
-	glm::vec3 cameraDirection = glm::vec3(
-		-sin(radY) * cos(radX), // x
-		-sin(radX),             // y
-		-cos(radY) * cos(radX)  // z
-	);
-	glm::vec3 cameraUp = glm::vec3(sin(radZ), cos(radZ), 0.0f);
+	glm::vec3 cameraPos, cameraTarget, cameraUp;
+
+	if (rotatingCameraCenterY) {
+		cameraPos = glm::vec3(
+			radiusCenterY * sin(radCenterY),
+			0.0f,
+			radiusCenterY * cos(radCenterY)
+		);
+		cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f); // 반드시 원점!
+	}
+	else 
+	{
+		cameraPos = glm::vec3(0.0f, 0.0f, radiusCenterY);
+		glm::vec3 cameraDirection = glm::vec3(
+			-sin(radY) * cos(radX),
+			-sin(radX),
+			-cos(radY) * cos(radX)
+		);
+		cameraTarget = cameraPos + cameraDirection;
+	}
+
+		cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+		glm::vec3 dir = glm::normalize(cameraTarget - cameraPos);
+		glm::mat4 rollMat = glm::rotate(glm::mat4(1.0f), radZ, dir);
+		cameraUp = glm::vec3(rollMat * glm::vec4(cameraUp, 0.0f));
 
 	glm::mat4 vTransform = glm::mat4(1.0f);
-	vTransform = glm::lookAt(cameraPos, cameraPos+cameraDirection, cameraUp);
+	vTransform = glm::lookAt(cameraPos, cameraTarget, cameraUp);
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &vTransform[0][0]);
 
 	glm::mat4 pTransform = glm::mat4(1.0f);
