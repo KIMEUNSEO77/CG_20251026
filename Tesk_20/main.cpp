@@ -29,14 +29,19 @@ bool rotatingCameraX = false;
 float angleCameraX = 0.0f;
 int dirCameraX = 1;   // 1: 양, -1: 음
 
+bool rotatingCameraY = false;
+float angleCameraY = 0.0f;
+
 void Timer(int value)
 {
 	if (middleRotatingY) angleY += 1.0f;
 	if (rotatingCameraZ) angleCameraZ += dirCameraZ * 2.0f;
 	if (rotatingCameraX) angleCameraX += dirCameraX * 2.0f;
+	if (rotatingCameraY) angleCameraY += 2.0f;
 
 	if (!rotatingCameraZ) angleCameraZ = 0.0f;
 	if (!rotatingCameraX) angleCameraX = 0.0f;
+	if (!rotatingCameraY) angleCameraY = 0.0f;
 
 	glutPostRedisplay();
 	glutTimerFunc(16, Timer, 0);
@@ -46,10 +51,11 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 	switch (key)
 	{
 	case 't': middleRotatingY = !middleRotatingY; break;
-	case 'z': rotatingCameraZ = !rotatingCameraZ; dirCameraZ = 1; rotatingCameraX = false; break;
-	case 'Z': rotatingCameraZ = !rotatingCameraZ; dirCameraZ = -1; rotatingCameraX = false; break;
-	case 'x': rotatingCameraX = !rotatingCameraX; dirCameraX = 1; rotatingCameraZ = false; break;
-	case 'X': rotatingCameraX = !rotatingCameraX; dirCameraX = -1; rotatingCameraZ = false; break;
+	case 'z': rotatingCameraZ = !rotatingCameraZ; dirCameraZ = 1; rotatingCameraX = false; rotatingCameraY = false; break;
+	case 'Z': rotatingCameraZ = !rotatingCameraZ; dirCameraZ = -1; rotatingCameraX = false; rotatingCameraY = false; break;
+	case 'x': rotatingCameraX = !rotatingCameraX; dirCameraX = 1; rotatingCameraZ = false; rotatingCameraY = false; break;
+	case 'X': rotatingCameraX = !rotatingCameraX; dirCameraX = -1; rotatingCameraZ = false; rotatingCameraY = false; break;
+	case 'y': rotatingCameraY = !rotatingCameraY; rotatingCameraX = false; rotatingCameraZ = false; break;
 	case 'q': exit(0); break;
 	}
 }
@@ -129,12 +135,13 @@ GLvoid drawScene()
 
 	float radZ = glm::radians(angleCameraZ);
 	float radX = glm::radians(angleCameraX);
+	float radY = glm::radians(angleCameraY);
 
-	// pitch 적용: 카메라가 바라보는 방향을 x축 기준으로 회전
+	// yaw(y축), pitch(x축) 모두 적용한 카메라 방향
 	glm::vec3 cameraDirection = glm::vec3(
-		0.0f,
-		-sin(radX),         // 위/아래로 기울임
-		-cos(radX)          // z축 방향
+		-sin(radY) * cos(radX), // x
+		-sin(radX),             // y
+		-cos(radY) * cos(radX)  // z
 	);
 	glm::vec3 cameraUp = glm::vec3(sin(radZ), cos(radZ), 0.0f);
 
@@ -147,12 +154,9 @@ GLvoid drawScene()
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, &pTransform[0][0]);
 
 	float offsetY = moveZ * sin(glm::radians(-15.0f));
-	//float offsetX = moveZ * sin(glm::radians(15.0f));
 
 	// 바닥
 	glm::mat4 ground = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f));
-	// ground = glm::translate(ground, glm::vec3(moveX, 0.0f, moveZ));
-	//ground = glm::rotate(ground, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	ground = glm::rotate(ground, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	ground = glm::scale(ground, glm::vec3(100.0f, 0.05f, 100.0f)); // 넓고 얇은 바닥
 	DrawCube(gTank, shaderProgramID, ground, glm::vec3(1.0f, 0.713f, 0.756f));
