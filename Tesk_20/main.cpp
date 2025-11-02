@@ -1,4 +1,4 @@
-#include <glew.h>
+ï»¿#include <glew.h>
 #include <freeglut.h>
 #include <freeglut_ext.h> 
 #include <glm/glm.hpp>
@@ -8,8 +8,6 @@
 #include "filetobuf.h"
 #include "shaderMaker.h"
 #include "obj_load.h"
-
-#include <chrono>
 
 void make_vertexShaders();
 void make_fragmentShaders();
@@ -24,11 +22,11 @@ float angleY = 0.0f;
 
 bool rotatingCameraZ = false;
 float angleCameraZ = 0.0f;
-int dirCameraZ = 1;   // 1: ¾ç, -1: À½
+int dirCameraZ = 1;   // 1: ì–‘, -1: ìŒ
 
 bool rotatingCameraX = false;
 float angleCameraX = 0.0f;
-int dirCameraX = 1;   // 1: ¾ç, -1: À½
+int dirCameraX = 1;   // 1: ì–‘, -1: ìŒ
 
 bool rotatingCameraY = false;
 float angleCameraY = 0.0f;
@@ -36,11 +34,9 @@ float angleCameraY = 0.0f;
 bool rotatingCameraCenterY = false;
 float angleCameraCenterY = 0.0f;
 
-bool rotatingBarel = false;  // Æ÷½Å È¸Àü
-float angleBarel1 = 0.0f;    // ¿ŞÂÊ Æ÷½Å °¢µµ
-float angleBarel2 = 0.0f;    // ¿À¸¥ÂÊ Æ÷½Å °¢µµ
-int dirBarel = -1;        // 1: ¾ç, -1: À½
-int dirBarel2 = 1;       // 1: ¾ç, -1: À½
+bool rotatingBarel = false;  // í¬ì‹  íšŒì „
+float angleBarel1 = 0.0f;    // ì™¼ìª½ í¬ì‹  ê°ë„
+float angleBarel2 = 0.0f;    // ì˜¤ë¥¸ìª½ í¬ì‹  ê°ë„
 
 bool rotatingFlag = false;
 float angleFlag1 = 0.0f;
@@ -48,12 +44,18 @@ float angleFlag2 = 0.0f;
 int dirFlag = 1;
 int dirFlag2 = -1;
 
-bool changingPosition = false;  // top body À§Ä¡ º¯°æ
+bool changingPosition = false;  // top body ìœ„ì¹˜ ë³€ê²½
 float animationTime = 0.0f;
 glm::vec3 pos1 = glm::vec3(-0.7f, 0.4f, 0.0f);
 glm::vec3 pos2 = glm::vec3(0.7f, 0.4f, 0.0f);
 glm::vec3 purposePos1 = glm::vec3(0.7f, 0.4f, 0.0f);
 glm::vec3 purposePos2 = glm::vec3(-0.7f, 0.4f, 0.0f);
+
+bool rotatingAnimation = false;  // ì¹´ë©”ë¼ ê³µì „ ì• ë‹ˆë©”ì´ì…˜
+bool isCameraWaiting = false;
+int cameraWaitCounter = 0;
+const int cameraWaitFrames = 60; // 1ì´ˆ
+float cameraStartAngle = 0.0f;
 
 void Timer(int value)
 {
@@ -99,6 +101,43 @@ void Timer(int value)
 
 	}
 
+	// ê³µì „ ì• ë‹ˆë©”ì´ì…˜
+	if (rotatingAnimation) 
+	{
+		if (!isCameraWaiting) 
+		{
+			rotatingCameraCenterY = true;
+			angleCameraCenterY += 2.0f;
+			// í•œ ë°”í€´ ëŒì•˜ëŠ”ì§€ ì²´í¬
+			if (angleCameraCenterY - cameraStartAngle >= 360.0f) 
+			{
+				angleCameraCenterY = cameraStartAngle + 360.0f;
+				rotatingCameraCenterY = false;
+				isCameraWaiting = true;
+				cameraWaitCounter = 0;
+				cameraStartAngle = angleCameraCenterY; // ë‹¤ìŒ ë°”í€´ ì‹œì‘ì 
+			}
+		}
+		else 
+		{
+			// ëŒ€ê¸° ìƒíƒœ
+			rotatingCameraCenterY = false;
+			cameraWaitCounter++;
+			if (cameraWaitCounter >= cameraWaitFrames) 
+			{
+				isCameraWaiting = false;
+				// ë‹¤ìŒ ë°”í€´ ì‹œì‘
+			}
+		}
+	}
+	else 
+	{
+		rotatingCameraCenterY = false;
+		isCameraWaiting = false;
+		cameraWaitCounter = 0;
+		cameraStartAngle = angleCameraCenterY;
+	}
+
 	glutPostRedisplay();
 	glutTimerFunc(16, Timer, 0);
 }
@@ -134,13 +173,13 @@ void Reset()
 
 	rotatingBarel = false;
 	angleBarel1 = 0.0f; angleBarel2 = 0.0f;
-	dirBarel = -1; dirBarel2 = 1;
 	rotatingFlag = false;
 	angleFlag1 = 0.0f; angleFlag2 = 0.0f;
 	dirFlag = 1; dirFlag2 = -1;
 	changingPosition = false;
 	animationTime = 0.0f;
 	pos1 = glm::vec3(-0.7f, 0.4f, 0.0f); pos2 = glm::vec3(0.7f, 0.4f, 0.0f);
+	purposePos1 = glm::vec3(0.7f, 0.4f, 0.0f); purposePos2 = glm::vec3(-0.7f, 0.4f, 0.0f);
 
 	glutPostRedisplay();
 }
@@ -159,6 +198,7 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 	case 'g': rotatingBarel = !rotatingBarel; break;
 	case 'p': rotatingFlag = !rotatingFlag; break;
 	case 'i': changingPosition = !changingPosition; break;
+	case 'a': rotatingAnimation = !rotatingAnimation; break;
 	case 'o': StopAllRotations(); break;
 	case 'c': Reset(); break;
 	case 'q': exit(0); break;
@@ -180,7 +220,7 @@ void SpecialKeyboard(int key, int x, int y)
 int main(int argc, char** argv)
 {
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);  // ±íÀÌ ¹öÆÛ Ãß°¡
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);  // ê¹Šì´ ë²„í¼ ì¶”ê°€
 	glutInitWindowPosition(50, 50);
 	glutInitWindowSize(width, height);
 	glutCreateWindow("Tesk_20");
@@ -191,8 +231,8 @@ int main(int argc, char** argv)
 	glewExperimental = GL_TRUE;
 	glewInit();
 
-	glEnable(GL_DEPTH_TEST); // ±íÀÌ Å×½ºÆ® È°¼ºÈ­
-	glEnable(GL_CULL_FACE);  // Àº¸é Á¦°Å È°¼ºÈ­
+	glEnable(GL_DEPTH_TEST); // ê¹Šì´ í…ŒìŠ¤íŠ¸ í™œì„±í™”
+	glEnable(GL_CULL_FACE);  // ì€ë©´ ì œê±° í™œì„±í™”
 
 	make_vertexShaders();
 	make_fragmentShaders();
@@ -241,7 +281,7 @@ GLvoid drawScene()
 	float radZ = glm::radians(angleCameraZ);
 	float radX = glm::radians(angleCameraX);
 	float radY = glm::radians(angleCameraY);
-	float radiusCenterY = 8.0f;   // °øÀü ¹İÁö¸§
+	float radiusCenterY = 8.0f;   // ê³µì „ ë°˜ì§€ë¦„
 	float radCenterY = glm::radians(angleCameraCenterY);
 
 	glm::vec3 cameraPos, cameraTarget, cameraUp;
@@ -253,7 +293,7 @@ GLvoid drawScene()
 			0.0f,
 			radiusCenterY * cos(radCenterY)
 		);
-		cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);  // ¿øÁ¡À» ¹Ù¶óº¸¸ç È¸Àü
+		cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);  // ì›ì ì„ ë°”ë¼ë³´ë©° íšŒì „
 	}
 	else 
 	{
@@ -263,7 +303,7 @@ GLvoid drawScene()
 			-sin(radX),
 			-cos(radY) * cos(radX)
 		);
-		cameraTarget = cameraPos + cameraDirection;  // Ä«¸Ş¶ó ¹Ù¶óº¸´Â ¹æÇâ °è»ê
+		cameraTarget = cameraPos + cameraDirection;  // ì¹´ë©”ë¼ ë°”ë¼ë³´ëŠ” ë°©í–¥ ê³„ì‚°
 	}
 
 	cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -281,31 +321,31 @@ GLvoid drawScene()
 
 	float offsetY = moveZ * sin(glm::radians(-15.0f));
 
-	// ¹Ù´Ú
+	// ë°”ë‹¥
 	glm::mat4 ground = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f));
 	ground = glm::rotate(ground, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	ground = glm::scale(ground, glm::vec3(100.0f, 0.05f, 100.0f)); // ³Ğ°í ¾ãÀº ¹Ù´Ú
+	ground = glm::scale(ground, glm::vec3(100.0f, 0.05f, 100.0f)); // ë„“ê³  ì–‡ì€ ë°”ë‹¥
 	DrawCube(gTank, shaderProgramID, ground, glm::vec3(1.0f, 0.713f, 0.756f));
 	
-    // °øÅë
+    // ê³µí†µ
 	glm::mat4 M_tank = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, offsetY, 0.0f));
 	M_tank = glm::translate(M_tank, glm::vec3(moveX, 0.0f, moveZ));
 	M_tank = glm::rotate(M_tank, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	M_tank = glm::rotate(M_tank, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	// ¾Æ·¡ ¸öÃ¼
+	// ì•„ë˜ ëª¸ì²´
 	glm::mat4 bottomBody = M_tank * glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 0.5f, 1.0f));
 	DrawCube(gTank, shaderProgramID, bottomBody, glm::vec3(0.678f, 0.847f, 0.902f));
 
-	// Áß¾Ó ¸öÃ¼
+	// ì¤‘ì•™ ëª¸ì²´
 	glm::mat4 M_turret = M_tank;
 	M_turret = glm::translate(M_turret, glm::vec3(0.0f, 0.4f, 0.0f));
 	M_turret = glm::rotate(M_turret, glm::radians(angleY), glm::vec3(0.0f, 1.0f, 0.0f));
 
-	// Áß¾Ó ¸öÃ¼
+	// ì¤‘ì•™ ëª¸ì²´
 	glm::mat4 middleBody = M_turret * glm::scale(glm::mat4(1.0f), glm::vec3(1.5f, 0.25f, 0.5f));
 	DrawCube(gTank, shaderProgramID, middleBody, glm::vec3(0.564f, 0.933f, 0.564f));
 
-	// »ó´Ü
+	// ìƒë‹¨
 	glm::mat4 M_top1 = M_turret * glm::translate(glm::mat4(1.0f), pos1);
 	glm::mat4 topBody1 = M_top1 * glm::scale(glm::mat4(1.0f), glm::vec3(0.75f, 0.5f, 0.5f));
 	DrawCube(gTank, shaderProgramID, topBody1, glm::vec3(0.784f, 0.635f, 0.784f));
@@ -314,7 +354,7 @@ GLvoid drawScene()
 	glm::mat4 topBody2 = M_top2 * glm::scale(glm::mat4(1.0f), glm::vec3(0.75f, 0.5f, 0.5f));
 	DrawCube(gTank, shaderProgramID, topBody2, glm::vec3(0.784f, 0.635f, 0.784f));
 
-	// ±ê´ë
+	// ê¹ƒëŒ€
 	glm::mat4 flag1 = M_top1
 		* glm::rotate(glm::mat4(1.0f), glm::radians(angleFlag1), glm::vec3(1.0f, 0.0f, 0.0f))
 		* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.6f, 0.0f))
@@ -327,7 +367,7 @@ GLvoid drawScene()
 		* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 1.0f, 0.1f));
 	DrawCube(gTank, shaderProgramID, flag2, glm::vec3(1.0f, 0.7f, 0.3f));
 
-	// Æ÷½Å
+	// í¬ì‹ 
 	glm::mat4 barrel1 = M_top1
 		* glm::rotate(glm::mat4(1.0f), glm::radians(angleBarel1), glm::vec3(0.0f, 1.0f, 0.0f))
 		* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.2f, 0.5f))
