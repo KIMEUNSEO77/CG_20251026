@@ -50,8 +50,10 @@ int dirFlag2 = -1;
 
 bool changingPosition = false;  // top body 위치 변경
 float animationTime = 0.0f;
-glm::vec3 pos1 = changingPosition ? glm::vec3(0.7f, 0.4f, 0.0f) : glm::vec3(-0.7f, 0.4f, 0.0f);
-glm::vec3 pos2 = changingPosition ? glm::vec3(-0.7f, 0.4f, 0.0f) : glm::vec3(0.7f, 0.4f, 0.0f);
+glm::vec3 pos1 = glm::vec3(-0.7f, 0.4f, 0.0f);
+glm::vec3 pos2 = glm::vec3(0.7f, 0.4f, 0.0f);
+glm::vec3 purposePos1 = glm::vec3(0.7f, 0.4f, 0.0f);
+glm::vec3 purposePos2 = glm::vec3(-0.7f, 0.4f, 0.0f);
 
 void Timer(int value)
 {
@@ -62,12 +64,8 @@ void Timer(int value)
 	if (rotatingCameraCenterY) angleCameraCenterY += 2.0f;
 	if (rotatingBarel) 
 	{
-		angleBarel1 += 2.0f * dirBarel;
-		if (angleBarel1 < -180.0f) dirBarel = 1;
-		else if (angleBarel1 > 0.0f) dirBarel = -1;
-		angleBarel2 += 2.0f * dirBarel2;
-		if (angleBarel2 > 180.0f) dirBarel2 = -1;
-		else if (angleBarel2 < 0.0f) dirBarel2 = 1;
+		angleBarel1 -= 2.0f;
+		angleBarel2 += 2.0f;
 	}
 
 	if (rotatingFlag) 
@@ -82,19 +80,22 @@ void Timer(int value)
 
 	if (changingPosition) 
 	{
-		animationTime += 0.02f;
-		if (animationTime >= glm::pi<float>()) 
+		animationTime += 0.02f; // 속도
+		float t = animationTime; // 0 → 1로 증가한다고 가정
+
+		if (t >= 1.0f)
 		{
 			animationTime = 0.0f;
-			pos1 = glm::vec3(-0.7f, 0.4f, 0.0f);
-			pos2 = glm::vec3(0.7f, 0.4f, 0.0f);
+			pos1 = purposePos1;
+			pos2 = purposePos2;
+
+			glm::vec3 temp = purposePos1;
+			purposePos1 = purposePos2;
+			purposePos2 = temp;
 		}
-		else 
-		{
-			float t = (sin(animationTime - glm::half_pi<float>()) + 1.0f) / 2.0f; // 0 to 1
-			pos1 = glm::mix(glm::vec3(0.7f, 0.4f, 0.0f), glm::vec3(-0.7f, 0.4f, 0.0f), t);
-			pos2 = glm::mix(glm::vec3(-0.7f, 0.4f, 0.0f), glm::vec3(0.7f, 0.4f, 0.0f), t);
-		}
+
+		pos1 = glm::mix(glm::vec3(-0.7f, 0.4f, 0.0f), purposePos1, t);
+		pos2 = glm::mix(glm::vec3(0.7f, 0.4f, 0.0f), purposePos2, t);
 	}
 
 	glutPostRedisplay();
@@ -108,6 +109,9 @@ void StopAllRotations()
 	rotatingCameraX = false;
 	rotatingCameraY = false;
 	rotatingCameraCenterY = false;
+	rotatingBarel = false;
+	rotatingFlag = false;
+	changingPosition = false;
 
 	glutPostRedisplay();
 }
@@ -126,6 +130,16 @@ void Reset()
 	rotatingCameraCenterY = false;
 	angleCameraCenterY = 0.0f;
 	moveX = 0.0f; moveZ = 0.0f;
+
+	rotatingBarel = false;
+	angleBarel1 = 0.0f; angleBarel2 = 0.0f;
+	dirBarel = -1; dirBarel2 = 1;
+	rotatingFlag = false;
+	angleFlag1 = 0.0f; angleFlag2 = 0.0f;
+	dirFlag = 1; dirFlag2 = -1;
+	changingPosition = false;
+	animationTime = 0.0f;
+	pos1 = glm::vec3(-0.7f, 0.4f, 0.0f); pos2 = glm::vec3(0.7f, 0.4f, 0.0f);
 
 	glutPostRedisplay();
 }
