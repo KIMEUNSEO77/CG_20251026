@@ -39,6 +39,14 @@ float angleCameraCenterY = 0.0f;
 bool rotatingBarel = false;  // 포신 회전
 float angleBarel1 = 0.0f;    // 왼쪽 포신 각도
 float angleBarel2 = 0.0f;    // 오른쪽 포신 각도
+int dirBarel = -1;        // 1: 양, -1: 음
+int dirBarel2 = 1;       // 1: 양, -1: 음
+
+bool rotatingFlag = false;
+float angleFlag1 = 0.0f;
+float angleFlag2 = 0.0f;
+int dirFlag = 1;
+int dirFlag2 = -1;
 
 void Timer(int value)
 {
@@ -49,8 +57,22 @@ void Timer(int value)
 	if (rotatingCameraCenterY) angleCameraCenterY += 2.0f;
 	if (rotatingBarel) 
 	{
-		angleBarel1 += 2.0f;
-		angleBarel2 -= 2.0f;
+		angleBarel1 += 2.0f * dirBarel;
+		if (angleBarel1 < -180.0f) dirBarel = 1;
+		else if (angleBarel1 > 0.0f) dirBarel = -1;
+		angleBarel2 += 2.0f * dirBarel2;
+		if (angleBarel2 > 180.0f) dirBarel2 = -1;
+		else if (angleBarel2 < 0.0f) dirBarel2 = 1;
+	}
+
+	if (rotatingFlag) 
+	{
+		angleFlag1 += 2.0f * dirFlag;
+		if (angleFlag1 > 90.0f) dirFlag = -1;
+		else if (angleFlag1 < -90.0f) dirFlag = 1;
+		angleFlag2 += 2.0f * dirFlag2;
+		if (angleFlag2 > 90.0f) dirFlag2 = -1;
+		else if (angleFlag2 < -90.0f) dirFlag2 = 1;
 	}
 
 	glutPostRedisplay();
@@ -98,6 +120,7 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 	case 'y': rotatingCameraY = !rotatingCameraY; rotatingCameraX = false; rotatingCameraZ = false; break;
 	case 'r': rotatingCameraCenterY = !rotatingCameraCenterY; rotatingCameraX = false; rotatingCameraZ = false; rotatingCameraY = false; break;
 	case 'g': rotatingBarel = !rotatingBarel; break;
+	case 'p': rotatingFlag = !rotatingFlag; break;
 	case 'o': StopAllRotations(); break;
 	case 'c': Reset(); break;
 	case 'q': exit(0); break;
@@ -256,23 +279,26 @@ GLvoid drawScene()
 
 	// 4) 깃대: 각각 상단 몸체의 자식으로 (topBody 기준)
 	glm::mat4 flag1 = M_top1
+		* glm::rotate(glm::mat4(1.0f), glm::radians(angleFlag1), glm::vec3(1.0f, 0.0f, 0.0f))
 		* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.6f, 0.0f))
 		* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 1.0f, 0.1f));
 	DrawCube(gTank, shaderProgramID, flag1, glm::vec3(1.0f, 0.7f, 0.3f));
 
 	glm::mat4 flag2 = M_top2
+		* glm::rotate(glm::mat4(1.0f), glm::radians(angleFlag2), glm::vec3(1.0f, 0.0f, 0.0f))
 		* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.6f, 0.0f))
 		* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 1.0f, 0.1f));
 	DrawCube(gTank, shaderProgramID, flag2, glm::vec3(1.0f, 0.7f, 0.3f));
 
 	// 5) 포신: 각각 상단 몸체의 자식으로
 	glm::mat4 barrel1 = M_top1
-		* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.2f, 0.5f))
 		* glm::rotate(glm::mat4(1.0f), glm::radians(angleBarel1), glm::vec3(0.0f, 1.0f, 0.0f))
+		* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.2f, 0.5f))
 		* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 1.0f));
 	DrawCube(gTank, shaderProgramID, barrel1, glm::vec3(0.5f, 0.0f, 0.5f));
 
 	glm::mat4 barrel2 = M_top2
+		* glm::rotate(glm::mat4(1.0f), glm::radians(angleBarel2), glm::vec3(0.0f, 1.0f, 0.0f))
 		* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.2f, 0.5f))
 		* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 1.0f));
 	DrawCube(gTank, shaderProgramID, barrel2, glm::vec3(0.5f, 0.0f, 0.5f));
