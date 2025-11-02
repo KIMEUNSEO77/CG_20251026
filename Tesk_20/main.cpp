@@ -48,6 +48,11 @@ float angleFlag2 = 0.0f;
 int dirFlag = 1;
 int dirFlag2 = -1;
 
+bool changingPosition = false;  // top body À§Ä¡ º¯°æ
+float animationTime = 0.0f;
+glm::vec3 pos1 = changingPosition ? glm::vec3(0.7f, 0.4f, 0.0f) : glm::vec3(-0.7f, 0.4f, 0.0f);
+glm::vec3 pos2 = changingPosition ? glm::vec3(-0.7f, 0.4f, 0.0f) : glm::vec3(0.7f, 0.4f, 0.0f);
+
 void Timer(int value)
 {
 	if (middleRotatingY) angleY += 1.0f;
@@ -73,6 +78,23 @@ void Timer(int value)
 		angleFlag2 += 2.0f * dirFlag2;
 		if (angleFlag2 > 90.0f) dirFlag2 = -1;
 		else if (angleFlag2 < -90.0f) dirFlag2 = 1;
+	}
+
+	if (changingPosition) 
+	{
+		animationTime += 0.02f;
+		if (animationTime >= glm::pi<float>()) 
+		{
+			animationTime = 0.0f;
+			pos1 = glm::vec3(-0.7f, 0.4f, 0.0f);
+			pos2 = glm::vec3(0.7f, 0.4f, 0.0f);
+		}
+		else 
+		{
+			float t = (sin(animationTime - glm::half_pi<float>()) + 1.0f) / 2.0f; // 0 to 1
+			pos1 = glm::mix(glm::vec3(0.7f, 0.4f, 0.0f), glm::vec3(-0.7f, 0.4f, 0.0f), t);
+			pos2 = glm::mix(glm::vec3(-0.7f, 0.4f, 0.0f), glm::vec3(0.7f, 0.4f, 0.0f), t);
+		}
 	}
 
 	glutPostRedisplay();
@@ -121,6 +143,7 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 	case 'r': rotatingCameraCenterY = !rotatingCameraCenterY; rotatingCameraX = false; rotatingCameraZ = false; rotatingCameraY = false; break;
 	case 'g': rotatingBarel = !rotatingBarel; break;
 	case 'p': rotatingFlag = !rotatingFlag; break;
+	case 'i': changingPosition = !changingPosition; break;
 	case 'o': StopAllRotations(); break;
 	case 'c': Reset(); break;
 	case 'q': exit(0); break;
@@ -269,11 +292,11 @@ GLvoid drawScene()
 	DrawCube(gTank, shaderProgramID, middleBody, glm::vec3(0.564f, 0.933f, 0.564f));
 
 	// 3) »ó´Ü ÁÂ/¿ì ¸öÃ¼
-	glm::mat4 M_top1 = M_turret * glm::translate(glm::mat4(1.0f), glm::vec3(-0.7f, 0.4f, 0.0f));
+	glm::mat4 M_top1 = M_turret * glm::translate(glm::mat4(1.0f), pos1);
 	glm::mat4 topBody1 = M_top1 * glm::scale(glm::mat4(1.0f), glm::vec3(0.75f, 0.5f, 0.5f));
 	DrawCube(gTank, shaderProgramID, topBody1, glm::vec3(0.784f, 0.635f, 0.784f));
 
-	glm::mat4 M_top2 = M_turret * glm::translate(glm::mat4(1.0f), glm::vec3(0.7f, 0.4f, 0.0f));
+	glm::mat4 M_top2 = M_turret * glm::translate(glm::mat4(1.0f), pos2);
 	glm::mat4 topBody2 = M_top2 * glm::scale(glm::mat4(1.0f), glm::vec3(0.75f, 0.5f, 0.5f));
 	DrawCube(gTank, shaderProgramID, topBody2, glm::vec3(0.784f, 0.635f, 0.784f));
 
