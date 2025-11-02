@@ -19,7 +19,6 @@ GLvoid Reshape(int w, int h);
 
 Mesh gTank;
 float moveX = 0.0f; float moveZ = 0.0f;
-// 중앙 몸체 y축 회전
 bool middleRotatingY = false;
 float angleY = 0.0f;
 
@@ -37,12 +36,9 @@ float angleCameraY = 0.0f;
 bool rotatingCameraCenterY = false;
 float angleCameraCenterY = 0.0f;
 
-bool rotatingAnimation = false;
-bool waitingAnimation = false;
-std::chrono::steady_clock::time_point animationWaitStart;
-
-bool waitingAfterFullRotation = false;
-std::chrono::steady_clock::time_point fullRotationWaitStart;
+bool rotatingBarel = false;  // 포신 회전
+float angleBarel1 = 0.0f;    // 왼쪽 포신 각도
+float angleBarel2 = 0.0f;    // 오른쪽 포신 각도
 
 void Timer(int value)
 {
@@ -51,39 +47,10 @@ void Timer(int value)
 	if (rotatingCameraX) angleCameraX += dirCameraX * 2.0f;
 	if (rotatingCameraY) angleCameraY += 2.0f;
 	if (rotatingCameraCenterY) angleCameraCenterY += 2.0f;
-
-	if (waitingAnimation)
+	if (rotatingBarel) 
 	{
-		auto now = std::chrono::steady_clock::now();
-		auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - animationWaitStart).count();
-		if (elapsed >= 2000) 
-		{ // 2초(2000ms) 경과
-			rotatingAnimation = true;
-			waitingAnimation = false;
-		}
-	}
-	if (rotatingAnimation)
-	{
-		if (!waitingAfterFullRotation) {
-			rotatingCameraCenterY = true;
-			angleCameraCenterY += 2.0f;
-			if (angleCameraCenterY >= 360.0f) {
-				angleCameraCenterY = 360.0f; // 정확히 360도에서 멈춤
-				rotatingCameraCenterY = false;
-				waitingAfterFullRotation = true;
-				fullRotationWaitStart = std::chrono::steady_clock::now();
-			}
-		}
-		else {
-			// 2초 대기
-			auto now = std::chrono::steady_clock::now();
-			auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - fullRotationWaitStart).count();
-			if (elapsed >= 200) {
-				angleCameraCenterY = 0.0f;
-				waitingAfterFullRotation = false;
-				rotatingCameraCenterY = true;
-			}
-		}
+		angleBarel1 += 2.0f;
+		angleBarel2 -= 2.0f;
 	}
 
 	glutPostRedisplay();
@@ -130,17 +97,7 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 	case 'X': rotatingCameraX = !rotatingCameraX; dirCameraX = -1; rotatingCameraZ = false; rotatingCameraY = false; break;
 	case 'y': rotatingCameraY = !rotatingCameraY; rotatingCameraX = false; rotatingCameraZ = false; break;
 	case 'r': rotatingCameraCenterY = !rotatingCameraCenterY; rotatingCameraX = false; rotatingCameraZ = false; rotatingCameraY = false; break;
-	case 'a': 
-		if (!rotatingAnimation && !waitingAnimation)
-		{
-			waitingAnimation = true;
-			animationWaitStart = std::chrono::steady_clock::now();
-		}
-		else if (rotatingAnimation)
-		{
-			rotatingAnimation = false;
-		} break;
-
+	case 'g': rotatingBarel = !rotatingBarel; break;
 	case 'o': StopAllRotations(); break;
 	case 'c': Reset(); break;
 	case 'q': exit(0); break;
@@ -269,7 +226,7 @@ GLvoid drawScene()
 	ground = glm::scale(ground, glm::vec3(100.0f, 0.05f, 100.0f)); // 넓고 얇은 바닥
 	DrawCube(gTank, shaderProgramID, ground, glm::vec3(1.0f, 0.713f, 0.756f));
 	
-// 공통: 탱크의 월드 위치/기울기 (부모 변환)
+    // 공통: 탱크의 월드 위치/기울기 (부모 변환)
 	glm::mat4 M_tank = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, offsetY, 0.0f));
 	M_tank = glm::translate(M_tank, glm::vec3(moveX, 0.0f, moveZ));
 	M_tank = glm::rotate(M_tank, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -288,37 +245,35 @@ GLvoid drawScene()
 	glm::mat4 middleBody = M_turret * glm::scale(glm::mat4(1.0f), glm::vec3(1.5f, 0.25f, 0.5f));
 	DrawCube(gTank, shaderProgramID, middleBody, glm::vec3(0.564f, 0.933f, 0.564f));
 
-	// 3) 상단 좌/우 몸체: 포탑 기준의 상대 위치
-	glm::mat4 topBody1 = M_turret
-		* glm::translate(glm::mat4(1.0f), glm::vec3(-0.7f, 0.3f, 0.5f))
-		* glm::scale(glm::mat4(1.0f), glm::vec3(0.75f, 0.5f, 0.5f));
+	// 3) 상단 좌/우 몸체
+	glm::mat4 M_top1 = M_turret * glm::translate(glm::mat4(1.0f), glm::vec3(-0.7f, 0.4f, 0.0f));
+	glm::mat4 topBody1 = M_top1 * glm::scale(glm::mat4(1.0f), glm::vec3(0.75f, 0.5f, 0.5f));
 	DrawCube(gTank, shaderProgramID, topBody1, glm::vec3(0.784f, 0.635f, 0.784f));
 
-	glm::mat4 topBody2 = M_turret
-		* glm::translate(glm::mat4(1.0f), glm::vec3(0.7f, 0.3f, 0.5f))
-		* glm::scale(glm::mat4(1.0f), glm::vec3(0.75f, 0.5f, 0.5f));
+	glm::mat4 M_top2 = M_turret * glm::translate(glm::mat4(1.0f), glm::vec3(0.7f, 0.4f, 0.0f));
+	glm::mat4 topBody2 = M_top2 * glm::scale(glm::mat4(1.0f), glm::vec3(0.75f, 0.5f, 0.5f));
 	DrawCube(gTank, shaderProgramID, topBody2, glm::vec3(0.784f, 0.635f, 0.784f));
 
-	// 4) 깃대: 포탑 기준 상대 위치 (원래 1.3 → 상대 0.9)
-	//    ※ 깃대를 포탑 회전에 따르지 않게 하려면 M_turret 대신 M_tank 사용
-	glm::mat4 flag1 = M_turret
-		* glm::translate(glm::mat4(1.0f), glm::vec3(-0.7f, 0.9f, 0.5f))
+	// 4) 깃대: 각각 상단 몸체의 자식으로 (topBody 기준)
+	glm::mat4 flag1 = M_top1
+		* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.6f, 0.0f))
 		* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 1.0f, 0.1f));
 	DrawCube(gTank, shaderProgramID, flag1, glm::vec3(1.0f, 0.7f, 0.3f));
 
-	glm::mat4 flag2 = M_turret
-		* glm::translate(glm::mat4(1.0f), glm::vec3(0.7f, 0.9f, 0.5f))
+	glm::mat4 flag2 = M_top2
+		* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.6f, 0.0f))
 		* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 1.0f, 0.1f));
 	DrawCube(gTank, shaderProgramID, flag2, glm::vec3(1.0f, 0.7f, 0.3f));
 
-	// 5) 포신
-	glm::mat4 barrel1 = M_turret
-		* glm::translate(glm::mat4(1.0f), glm::vec3(-0.7f, 0.1f, 1.0f))
+	// 5) 포신: 각각 상단 몸체의 자식으로
+	glm::mat4 barrel1 = M_top1
+		* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.2f, 0.5f))
+		* glm::rotate(glm::mat4(1.0f), glm::radians(angleBarel1), glm::vec3(0.0f, 1.0f, 0.0f))
 		* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 1.0f));
 	DrawCube(gTank, shaderProgramID, barrel1, glm::vec3(0.5f, 0.0f, 0.5f));
 
-	glm::mat4 barrel2 = M_turret
-		* glm::translate(glm::mat4(1.0f), glm::vec3(0.7f, 0.1f, 1.0f))
+	glm::mat4 barrel2 = M_top2
+		* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.2f, 0.5f))
 		* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 1.0f));
 	DrawCube(gTank, shaderProgramID, barrel2, glm::vec3(0.5f, 0.0f, 0.5f));
 
