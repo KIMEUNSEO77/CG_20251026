@@ -228,13 +228,14 @@ GLvoid drawScene()
 
 	glm::vec3 cameraPos, cameraTarget, cameraUp;
 
-	if (rotatingCameraCenterY) {
+	if (rotatingCameraCenterY) 
+	{
 		cameraPos = glm::vec3(
 			radiusCenterY * sin(radCenterY),
 			0.0f,
 			radiusCenterY * cos(radCenterY)
 		);
-		cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f); // 반드시 원점!
+		cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
 	}
 	else 
 	{
@@ -268,66 +269,57 @@ GLvoid drawScene()
 	ground = glm::scale(ground, glm::vec3(100.0f, 0.05f, 100.0f)); // 넓고 얇은 바닥
 	DrawCube(gTank, shaderProgramID, ground, glm::vec3(1.0f, 0.713f, 0.756f));
 	
-	// 아래 몸체
-	glm::mat4 bottomBody = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f + offsetY, 0.0f));
-	bottomBody = glm::translate(bottomBody, glm::vec3(moveX, 0.0f, moveZ));
-	bottomBody = glm::rotate(bottomBody, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	bottomBody = glm::rotate(bottomBody, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	bottomBody = glm::scale(bottomBody, glm::vec3(3.0f, 0.5f, 1.0f));
+// 공통: 탱크의 월드 위치/기울기 (부모 변환)
+	glm::mat4 M_tank = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, offsetY, 0.0f));
+	M_tank = glm::translate(M_tank, glm::vec3(moveX, 0.0f, moveZ));
+	M_tank = glm::rotate(M_tank, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	M_tank = glm::rotate(M_tank, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	// 1) 아래 몸체: 부모만 따름
+	glm::mat4 bottomBody = M_tank * glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 0.5f, 1.0f));
 	DrawCube(gTank, shaderProgramID, bottomBody, glm::vec3(0.678f, 0.847f, 0.902f));
 
+	// 2) 포탑(중앙 몸체) 베이스: 부모 + 포탑 위치 + 포탑 회전
+	//    (여기에 달린 모든 자식은 angleY를 같이 받음)
+	glm::mat4 M_turret = M_tank;
+	M_turret = glm::translate(M_turret, glm::vec3(0.0f, 0.4f, 0.0f));
+	M_turret = glm::rotate(M_turret, glm::radians(angleY), glm::vec3(0.0f, 1.0f, 0.0f));
+
 	// 중앙 몸체
-	glm::mat4 middleBody = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.4f + offsetY, 0.0f));
-	middleBody = glm::translate(middleBody, glm::vec3(moveX, 0.0f, moveZ));
-	middleBody = glm::rotate(middleBody, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	middleBody = glm::rotate(middleBody, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	middleBody = glm::rotate(middleBody, glm::radians(angleY), glm::vec3(0.0f, 1.0f, 0.0f));
-	middleBody = glm::scale(middleBody, glm::vec3(1.5f, 0.25f, 0.5f));
+	glm::mat4 middleBody = M_turret * glm::scale(glm::mat4(1.0f), glm::vec3(1.5f, 0.25f, 0.5f));
 	DrawCube(gTank, shaderProgramID, middleBody, glm::vec3(0.564f, 0.933f, 0.564f));
 
-	// 왼쪽 위 몸체
-	glm::mat4 topBody1 = glm::translate(glm::mat4(1.0f), glm::vec3(-0.7f, 0.7f + offsetY, 0.5f));
-	topBody1 = glm::translate(topBody1, glm::vec3(moveX, 0.0f, moveZ));
-	topBody1 = glm::rotate(topBody1, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	topBody1 = glm::rotate(topBody1, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	topBody1 = glm::rotate(topBody1, glm::radians(angleY), glm::vec3(0.0f, 1.0f, 0.0f));
-	topBody1 = glm::scale(topBody1, glm::vec3(0.75f, 0.5f, 0.5f));
+	// 3) 상단 좌/우 몸체: 포탑 기준의 상대 위치
+	glm::mat4 topBody1 = M_turret
+		* glm::translate(glm::mat4(1.0f), glm::vec3(-0.7f, 0.3f, 0.5f))
+		* glm::scale(glm::mat4(1.0f), glm::vec3(0.75f, 0.5f, 0.5f));
 	DrawCube(gTank, shaderProgramID, topBody1, glm::vec3(0.784f, 0.635f, 0.784f));
-	// 오른쪽 위 몸체
-	glm::mat4 topBody2 = glm::translate(glm::mat4(1.0f), glm::vec3(0.7f, 0.7f + offsetY, 0.5f));
-	topBody2 = glm::translate(topBody2, glm::vec3(moveX, 0.0f, moveZ));
-	topBody2 = glm::rotate(topBody2, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	topBody2 = glm::rotate(topBody2, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	topBody2 = glm::rotate(topBody2, glm::radians(angleY), glm::vec3(0.0f, 1.0f, 0.0f));
-	topBody2 = glm::scale(topBody2, glm::vec3(0.75f, 0.5f, 0.5f));
+
+	glm::mat4 topBody2 = M_turret
+		* glm::translate(glm::mat4(1.0f), glm::vec3(0.7f, 0.3f, 0.5f))
+		* glm::scale(glm::mat4(1.0f), glm::vec3(0.75f, 0.5f, 0.5f));
 	DrawCube(gTank, shaderProgramID, topBody2, glm::vec3(0.784f, 0.635f, 0.784f));
-	// 왼쪽 깃대
-	glm::mat4 flag1 = glm::translate(glm::mat4(1.0f), glm::vec3(-0.7f, 1.3f + offsetY, 0.5f));
-	flag1 = glm::translate(flag1, glm::vec3(moveX, 0.0f, moveZ));
-	flag1 = glm::rotate(flag1, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	flag1 = glm::rotate(flag1, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	flag1 = glm::scale(flag1, glm::vec3(0.1f, 1.0f, 0.1f));
+
+	// 4) 깃대: 포탑 기준 상대 위치 (원래 1.3 → 상대 0.9)
+	//    ※ 깃대를 포탑 회전에 따르지 않게 하려면 M_turret 대신 M_tank 사용
+	glm::mat4 flag1 = M_turret
+		* glm::translate(glm::mat4(1.0f), glm::vec3(-0.7f, 0.9f, 0.5f))
+		* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 1.0f, 0.1f));
 	DrawCube(gTank, shaderProgramID, flag1, glm::vec3(1.0f, 0.7f, 0.3f));
-	// 오른쪽 깃대
-	glm::mat4 flag2 = glm::translate(glm::mat4(1.0f), glm::vec3(0.7f, 1.3f + offsetY, 0.5f));
-	flag2 = glm::translate(flag2, glm::vec3(moveX, 0.0f, moveZ));
-	flag2 = glm::rotate(flag2, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	flag2 = glm::rotate(flag2, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	flag2 = glm::scale(flag2, glm::vec3(0.1f, 1.0f, 0.1f));
+
+	glm::mat4 flag2 = M_turret
+		* glm::translate(glm::mat4(1.0f), glm::vec3(0.7f, 0.9f, 0.5f))
+		* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 1.0f, 0.1f));
 	DrawCube(gTank, shaderProgramID, flag2, glm::vec3(1.0f, 0.7f, 0.3f));
-	// 왼쪽 포신
-	glm::mat4 barrel1 = glm::translate(glm::mat4(1.0f), glm::vec3(-0.7f, 0.5f + offsetY, 1.5f));
-	barrel1 = glm::translate(barrel1, glm::vec3(moveX, 0.0f, moveZ));
-	barrel1 = glm::rotate(barrel1, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	barrel1 = glm::rotate(barrel1, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	barrel1 = glm::scale(barrel1, glm::vec3(0.1f, 0.1f, 1.0f));
+
+	// 5) 포신
+	glm::mat4 barrel1 = M_turret
+		* glm::translate(glm::mat4(1.0f), glm::vec3(-0.7f, 0.1f, 1.0f))
+		* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 1.0f));
 	DrawCube(gTank, shaderProgramID, barrel1, glm::vec3(0.5f, 0.0f, 0.5f));
-	// 오른쪽 포신
-	glm::mat4 barrel2 = glm::translate(glm::mat4(1.0f), glm::vec3(0.7f, 0.5f + offsetY, 1.5f));
-	barrel2 = glm::translate(barrel2, glm::vec3(moveX, 0.0f, moveZ));
-	barrel2 = glm::rotate(barrel2, glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	barrel2 = glm::rotate(barrel2, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	barrel2 = glm::scale(barrel2, glm::vec3(0.1f, 0.1f, 1.0f));
+
+	glm::mat4 barrel2 = M_turret
+		* glm::translate(glm::mat4(1.0f), glm::vec3(0.7f, 0.1f, 1.0f))
+		* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 1.0f));
 	DrawCube(gTank, shaderProgramID, barrel2, glm::vec3(0.5f, 0.0f, 0.5f));
 
 	glutSwapBuffers();

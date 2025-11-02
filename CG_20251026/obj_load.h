@@ -153,7 +153,8 @@ static bool LoadOBJ_PosNorm_Interleaved(const char* path, Mesh& out)
 GLuint orbitVAO = 0, orbitVBO = 0;
 int ORBIT_SEG = 128;  // 부드러움
 
-void InitOrbitMesh() {
+void InitOrbitMesh() 
+{
     std::vector<glm::vec3> v(ORBIT_SEG);
     for (int i = 0; i < ORBIT_SEG; i++) {
         float t = 2.0f * 3.14 * (float)i / (float)ORBIT_SEG;

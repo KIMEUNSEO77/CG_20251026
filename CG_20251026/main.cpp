@@ -137,7 +137,7 @@ void DrawOrbit(GLuint shaderProgramID,
 {
 	glm::mat4 M(1.0f);
 	M = glm::translate(M, center);                         // 위치
-	M = glm::rotate(M, glm::radians(angle), { 1,0,1 });  // x, z축 기울이기
+	M = glm::rotate(M, glm::radians(angle), { 1,0,1 });    // x, z축 기울이기
 	M = glm::rotate(M, glm::radians(angleZ), glm::vec3(0.0f, 0.0f, 1.0f)); // z축 회전
 	M = glm::scale(M, glm::vec3(rx, 1.0f, rz));            // 타원 크기
 
