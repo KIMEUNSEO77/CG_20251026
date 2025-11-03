@@ -52,6 +52,8 @@ float cameraStartAngle = 0.0f;
 float cameraX = 0.0f;
 float cameraZ = 0.0f;
 
+bool rotatingCenterY2 = false;
+
 void Timer(int value)
 {
 	if (middleRotatingY) angleY += 1.0f;
@@ -131,6 +133,11 @@ void Timer(int value)
 		cameraStartAngle = angleCameraCenterY;
 	}
 
+	if (rotatingCenterY2)
+	{
+		angleCameraCenterY += 2.0f;
+	}
+
 	glutPostRedisplay();
 	glutTimerFunc(16, Timer, 0);
 }
@@ -181,10 +188,10 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 	case 'x': cameraX += 0.1f; glutPostRedisplay(); break;
 	case 'X': cameraX -= 0.1f; glutPostRedisplay(); break;
 	case 'y': rotatingCameraY = !rotatingCameraY; break;
-	case 'r': rotatingCameraCenterY = !rotatingCameraCenterY; break;
+	case 'r': rotatingAnimation = false; rotatingCenterY2 = !rotatingCenterY2;  break;
 	case 'p': rotatingFlag = !rotatingFlag; break;
 	case 'i': changingPosition = !changingPosition; break;
-	case 'a': rotatingAnimation = !rotatingAnimation; break;
+	case 'a': rotatingAnimation = !rotatingAnimation; rotatingCenterY2 = false; break;
 	case 'o': StopAllRotations(); break;
 	case 'c': Reset(); break;
 	case 'q': exit(0); break;
@@ -270,13 +277,14 @@ GLvoid drawScene()
 
 	glm::vec3 cameraPos, cameraTarget, cameraUp;
 
-	if (rotatingCameraCenterY) 
+	if (rotatingCameraCenterY || rotatingCenterY2) 
 	{
 		cameraPos = glm::vec3(
 			radiusCenterY * sin(radCenterY),
 			0.0f,
 			radiusCenterY * cos(radCenterY)
 		);
+		cameraPos += glm::vec3(cameraX, 0.0f, cameraZ);
 		cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);  // 원점을 바라보며 회전
 	}
 	else
