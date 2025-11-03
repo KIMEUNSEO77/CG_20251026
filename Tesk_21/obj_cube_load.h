@@ -133,12 +133,28 @@ static bool LoadOBJ_PosNorm_Interleaved(const char* path, CubeMesh& out)
             Na = Nb = Nc = fn;
         }
 
-        // 버킷은 "면 법선" 기준으로 분류(정점 노말이 아닌 '삼각형' 법선)
+        // 삼각형 face normal
         glm::vec3 fN = glm::normalize(glm::cross(Pb - Pa, Pc - Pa));
         if (!std::isfinite(fN.x) || !std::isfinite(fN.y) || !std::isfinite(fN.z))
             return;
+
+        // 어떤 면 버킷인가?
         int bkt = faceBucket(fN);
 
+        // ★ 버킷의 목표 법선(+X,-X,+Y,-Y,+Z,-Z)
+        static const glm::vec3 targetN[6] = {
+            {+1,0,0}, {-1,0,0}, {0,+1,0}, {0,-1,0}, {0,0,+1}, {0,0,-1}
+        };
+        glm::vec3 tn = targetN[bkt];
+
+        // ★ 목표 방향과 반대면 와인딩 뒤집기 (b,c swap)
+        if (glm::dot(fN, tn) < 0.0f) {
+            std::swap(Pb, Pc);
+            std::swap(Nb, Nc);
+            fN = -fN; // 선택적 업데이트
+        }
+
+        // 버킷에 push (정점 노말은 원래대로/혹은 fn으로, 둘 다 OK)
         pushV(buckets[bkt], Pa, Na);
         pushV(buckets[bkt], Pb, Nb);
         pushV(buckets[bkt], Pc, Nc);
