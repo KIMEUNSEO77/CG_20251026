@@ -19,11 +19,11 @@ GLvoid Reshape(int w, int h);
 Mesh gSphere;
 CubeMesh gCube;
 
-// 간단 팔레트 (원하는 색으로 바꿔도 됨)
+// 간단 팔레트 
 static const glm::vec3 kFaceColors[6] = 
 {
-	{1,0,0}, {0,1,0}, {0,0,1},
-	{1,1,0}, {1,0,1}, {0,1,1}
+	{0.784f, 0.635f, 0.784f}, {0.564f, 0.933f, 0.564f}, {0,0,1},
+	{1.0f, 0.713f, 0.756f}, {1,0,1}, {0.678f, 0.847f, 0.902f}
 };
 
 int main(int argc, char** argv)
