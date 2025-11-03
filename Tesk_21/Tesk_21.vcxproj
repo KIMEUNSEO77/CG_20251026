@@ -136,6 +136,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="filetobuf.h" />
+    <ClInclude Include="obj_cube_load.h" />
     <ClInclude Include="obj_load.h" />
     <ClInclude Include="shaderMaker.h" />
   </ItemGroup>

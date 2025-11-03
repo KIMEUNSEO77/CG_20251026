@@ -8,6 +8,7 @@
 #include "filetobuf.h"
 #include "shaderMaker.h"
 #include "obj_load.h"
+#include "obj_cube_load.h"
 
 void make_vertexShaders();
 void make_fragmentShaders();
@@ -16,6 +17,7 @@ GLvoid drawScene();
 GLvoid Reshape(int w, int h);
 
 Mesh gSphere;
+CubeMesh gCube;
 
 int main(int argc, char** argv)
 {
@@ -45,9 +47,29 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
+	if (!LoadOBJ_PosNorm_Interleaved("unit_cube.obj", gCube))
+	{
+		std::cerr << "Failed to load cube.obj\n";
+		return 1;
+	}
+
 	glutMainLoop();
 
 	return 0;
+}
+
+// 큐브 그리는 함수
+void DrawCube(const CubeMesh& mesh, GLuint shaderProgram, const glm::mat4& model, const glm::vec3& color)
+{
+	GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
+
+	GLint colorLoc = glGetUniformLocation(shaderProgram, "vColor");
+	glUniform3fv(colorLoc, 1, &color[0]);
+
+	glBindVertexArray(mesh.vao);
+	glDrawArrays(GL_TRIANGLES, 0, mesh.count);
+	glBindVertexArray(0);
 }
 
 // 구 그리는 함수
@@ -87,8 +109,17 @@ GLvoid drawScene()
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, &pTransform[0][0]);
 
 	glm::mat4 centerM = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	centerM = glm::scale(centerM, glm::vec3(2.0f, 2.0f, 2.0f));
-	DrawSphere(gSphere, shaderProgramID, centerM, glm::vec3(0.8f, 0.8f, 0.8f));
+	centerM = glm::scale(centerM, glm::vec3(0.5f, 0.5f, 0.5f));
+	DrawSphere(gSphere, shaderProgramID, centerM, glm::vec3(0.0f, 0.0f, 0.8f));
+
+	// 큐브 그리기
+	 // 공통
+	glm::mat4 M_tank = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	M_tank = glm::translate(M_tank, glm::vec3(-0.5f, 0.0f, -5.0f));
+	M_tank = glm::rotate(M_tank, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	// 아래 몸체
+	glm::mat4 bottomBody = M_tank * glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 5.0f));
+	DrawCube(gCube, shaderProgramID, bottomBody, glm::vec3(0.678f, 0.847f, 0.902f));
 
 	glutSwapBuffers();
 }
