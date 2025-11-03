@@ -20,14 +20,6 @@ float moveX = 0.0f; float moveZ = 0.0f;
 bool middleRotatingY = false;
 float angleY = 0.0f;
 
-bool rotatingCameraZ = false;
-float angleCameraZ = 0.0f;
-int dirCameraZ = 1;   // 1: 양, -1: 음
-
-bool rotatingCameraX = false;
-float angleCameraX = 0.0f;
-int dirCameraX = 1;   // 1: 양, -1: 음
-
 bool rotatingCameraY = false;
 float angleCameraY = 0.0f;
 
@@ -57,11 +49,12 @@ int cameraWaitCounter = 0;
 const int cameraWaitFrames = 60; // 1초
 float cameraStartAngle = 0.0f;
 
+float cameraX = 0.0f;
+float cameraZ = 0.0f;
+
 void Timer(int value)
 {
 	if (middleRotatingY) angleY += 1.0f;
-	if (rotatingCameraZ) angleCameraZ += dirCameraZ * 2.0f;
-	if (rotatingCameraX) angleCameraX += dirCameraX * 2.0f;
 	if (rotatingCameraY) angleCameraY += 2.0f;
 	if (rotatingCameraCenterY) angleCameraCenterY += 2.0f;
 	if (rotatingBarel) 
@@ -145,8 +138,6 @@ void Timer(int value)
 void StopAllRotations()
 {
 	middleRotatingY = false;
-	rotatingCameraZ = false;
-	rotatingCameraX = false;
 	rotatingCameraY = false;
 	rotatingCameraCenterY = false;
 	rotatingBarel = false;
@@ -161,10 +152,6 @@ void Reset()
 {
 	middleRotatingY = false;
 	angleY = 0.0f;
-	rotatingCameraZ = false;
-	angleCameraZ = 0.0f;
-	rotatingCameraX = false;
-	angleCameraX = 0.0f;
 	rotatingCameraY = false;
 	angleCameraY = 0.0f;
 	rotatingCameraCenterY = false;
@@ -189,13 +176,12 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 	switch (key)
 	{
 	case 't': middleRotatingY = !middleRotatingY; break;
-	case 'z': rotatingCameraZ = !rotatingCameraZ; dirCameraZ = 1; rotatingCameraX = false; rotatingCameraY = false; break;
-	case 'Z': rotatingCameraZ = !rotatingCameraZ; dirCameraZ = -1; rotatingCameraX = false; rotatingCameraY = false; break;
-	case 'x': rotatingCameraX = !rotatingCameraX; dirCameraX = 1; rotatingCameraZ = false; rotatingCameraY = false; break;
-	case 'X': rotatingCameraX = !rotatingCameraX; dirCameraX = -1; rotatingCameraZ = false; rotatingCameraY = false; break;
-	case 'y': rotatingCameraY = !rotatingCameraY; rotatingCameraX = false; rotatingCameraZ = false; break;
-	case 'r': rotatingCameraCenterY = !rotatingCameraCenterY; rotatingCameraX = false; rotatingCameraZ = false; rotatingCameraY = false; break;
-	case 'g': rotatingBarel = !rotatingBarel; break;
+	case 'z': cameraZ += 0.1f; glutPostRedisplay(); break;
+	case 'Z': cameraZ -= 0.1f; glutPostRedisplay(); break;
+	case 'x': cameraX += 0.1f; glutPostRedisplay(); break;
+	case 'X': cameraX -= 0.1f; glutPostRedisplay(); break;
+	case 'y': rotatingCameraY = !rotatingCameraY; break;
+	case 'r': rotatingCameraCenterY = !rotatingCameraCenterY; break;
 	case 'p': rotatingFlag = !rotatingFlag; break;
 	case 'i': changingPosition = !changingPosition; break;
 	case 'a': rotatingAnimation = !rotatingAnimation; break;
@@ -278,8 +264,6 @@ GLvoid drawScene()
 	//glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, 0.0f);
 	//glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-	float radZ = glm::radians(angleCameraZ);
-	float radX = glm::radians(angleCameraX);
 	float radY = glm::radians(angleCameraY);
 	float radiusCenterY = 8.0f;   // 공전 반지름
 	float radCenterY = glm::radians(angleCameraCenterY);
@@ -295,21 +279,19 @@ GLvoid drawScene()
 		);
 		cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);  // 원점을 바라보며 회전
 	}
-	else 
+	else
 	{
-		cameraPos = glm::vec3(0.0f, 0.0f, radiusCenterY);
+		cameraPos = glm::vec3(cameraX, 0.0f, cameraZ + radiusCenterY);
 		glm::vec3 cameraDirection = glm::vec3(
-			-sin(radY) * cos(radX),
-			-sin(radX),
-			-cos(radY) * cos(radX)
+			-sin(radY),
+			0,
+			-cos(radY)
 		);
-		cameraTarget = cameraPos + cameraDirection;  // 카메라 바라보는 방향 계산
+		cameraTarget = cameraPos + cameraDirection;
 	}
 
 	cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	glm::vec3 dir = glm::normalize(cameraTarget - cameraPos);
-	glm::mat4 rollMat = glm::rotate(glm::mat4(1.0f), radZ, dir);
-	cameraUp = glm::vec3(rollMat * glm::vec4(cameraUp, 0.0f));
 
 	glm::mat4 vTransform = glm::mat4(1.0f);
 	vTransform = glm::lookAt(cameraPos, cameraTarget, cameraUp);
