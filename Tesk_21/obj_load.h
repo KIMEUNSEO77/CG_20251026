@@ -149,23 +149,3 @@ static bool LoadOBJ_PosNorm_Interleaved(const char* path, Mesh& out)
     out.count = static_cast<GLsizei>(interleaved.size() / 6);
     return true;
 }
-
-GLuint orbitVAO = 0, orbitVBO = 0;
-int ORBIT_SEG = 128;  // 부드러움
-
-void InitOrbitMesh()
-{
-    std::vector<glm::vec3> v(ORBIT_SEG);
-    for (int i = 0; i < ORBIT_SEG; i++) {
-        float t = 2.0f * 3.14 * (float)i / (float)ORBIT_SEG;
-        v[i] = glm::vec3(cosf(t), 0.0f, sinf(t));  // 단위 원 (XZ)
-    }
-    glGenVertexArrays(1, &orbitVAO);
-    glGenBuffers(1, &orbitVBO);
-    glBindVertexArray(orbitVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, orbitVBO);
-    glBufferData(GL_ARRAY_BUFFER, v.size() * sizeof(glm::vec3), v.data(), GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
-    glEnableVertexAttribArray(0);
-    glBindVertexArray(0);
-}
