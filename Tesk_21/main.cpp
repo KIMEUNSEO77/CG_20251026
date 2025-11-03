@@ -19,6 +19,13 @@ GLvoid Reshape(int w, int h);
 Mesh gSphere;
 CubeMesh gCube;
 
+// 간단 팔레트 (원하는 색으로 바꿔도 됨)
+static const glm::vec3 kFaceColors[6] = 
+{
+	{1,0,0}, {0,1,0}, {0,0,1},
+	{1,1,0}, {1,0,1}, {0,1,1}
+};
+
 int main(int argc, char** argv)
 {
 	glutInit(&argc, argv);
@@ -35,6 +42,7 @@ int main(int argc, char** argv)
 
 	glEnable(GL_DEPTH_TEST); // 깊이 테스트 활성화
 	glEnable(GL_CULL_FACE);  // 은면 제거 활성화
+	glCullFace(GL_FRONT);    // 앞면 제거
 
 	make_vertexShaders();
 	make_fragmentShaders();
@@ -65,10 +73,19 @@ void DrawCube(const CubeMesh& mesh, GLuint shaderProgram, const glm::mat4& model
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
 
 	GLint colorLoc = glGetUniformLocation(shaderProgram, "vColor");
-	glUniform3fv(colorLoc, 1, &color[0]);
+	//glUniform3fv(colorLoc, 1, &color[0]);
 
 	glBindVertexArray(mesh.vao);
-	glDrawArrays(GL_TRIANGLES, 0, mesh.count);
+	for (size_t i = 0; i < mesh.faceRanges.size(); ++i)
+	{
+		const auto& r = mesh.faceRanges[i];
+
+		// ★ 면별 색 지정
+		const glm::vec3 c = kFaceColors[i % 6];
+		glUniform3f(colorLoc, c.r, c.g, c.b);
+
+		glDrawArrays(GL_TRIANGLES, r.first, r.count);
+	}
 	glBindVertexArray(0);
 }
 
@@ -116,6 +133,7 @@ GLvoid drawScene()
 	// 큐브 그리기
 	glm::mat4 centerCube = share * glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 5.0f));
 	DrawCube(gCube, shaderProgramID, centerCube, glm::vec3(0.678f, 0.847f, 0.902f));
+
 
 	// 공
 	glm::mat4 ball_1 = share

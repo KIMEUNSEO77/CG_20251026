@@ -10,14 +10,22 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+struct DrawRange 
+{
+    GLsizei first; // 시작 vertex index (삼각형 기준이 아니라 '정점' 인덱스)
+    GLsizei count; // 이 face가 차지하는 정점 개수 (= (삼각형 개수)*3 )
+};
+
 struct CubeMesh
 {
     GLuint vao = 0, vbo = 0;
     GLsizei count = 0; // number of vertices
+    std::vector<DrawRange> faceRanges; // ★ 면 단위 드로우 범위들
 };
 
 // -------- ���� ��ƿ --------
-static inline void RemoveUTF8BOM(std::string& s) {
+static inline void RemoveUTF8BOM(std::string& s) 
+{
     if (s.size() >= 3 &&
         (unsigned char)s[0] == 0xEF &&
         (unsigned char)s[1] == 0xBB &&
@@ -43,12 +51,11 @@ static inline Idx ParseFaceToken(const std::string& tok) {
     out.v = std::stoi(tok.substr(0, slash1));
 
     if (slash2 == (int)std::string::npos) {
-        // v/vt
         std::string vt = tok.substr(slash1 + 1);
         if (!vt.empty()) out.vt = std::stoi(vt);
     }
-    else {
-        // v/vt/vn  �Ǵ� v//vn
+    else 
+    {
         std::string vt = tok.substr(slash1 + 1, slash2 - slash1 - 1);
         std::string vn = tok.substr(slash2 + 1);
         if (!vt.empty()) out.vt = std::stoi(vt);
@@ -57,17 +64,12 @@ static inline Idx ParseFaceToken(const std::string& tok) {
     return out;
 }
 
-// ���� �ε��� ó��(OBJ �԰�: ������ ����������)
 static inline int FixIndex(int idx, int n) {
     if (idx > 0) return idx;            // 1..n
     if (idx < 0) return n + idx + 1;    // -1 => n, -2 => n-1 ...
     return 0;
 }
 
-// -------- ���� �δ� --------
-// - v, vn ��� (vt�� ����)
-// - face�� �ﰢ��/�ٰ��� ��� ���, �ﰢ�� ������ ����
-// - vn�� ������ �� �������� ����ؼ� ä��(��� ���̵�)
 static bool LoadOBJ_PosNorm_Interleaved(const char* path, CubeMesh& out)
 {
     std::ifstream ifs(path);
@@ -79,16 +81,13 @@ static bool LoadOBJ_PosNorm_Interleaved(const char* path, CubeMesh& out)
     std::vector<glm::vec3> positions;  // 1-based
     std::vector<glm::vec3> normals;    // 1-based
 
-    // ���(Ȯ����, �ε��� ���� �ٷ� interleave)
     std::vector<float> interleaved;
     interleaved.reserve(1 << 16);
 
     std::string line;
     bool firstLine = true;
 
-    // �ӽ�: �� face �ٿ��� ��ū���� ��� �� ����
     auto emitTriangle = [&](const Idx& a, const Idx& b, const Idx& c) {
-        // �ε��� ����
         int va = FixIndex(a.v, (int)positions.size());
         int vb = FixIndex(b.v, (int)positions.size());
         int vc = FixIndex(c.v, (int)positions.size());
@@ -109,7 +108,6 @@ static bool LoadOBJ_PosNorm_Interleaved(const char* path, CubeMesh& out)
             Nc = normals[nc - 1];
         }
         else {
-            // vn ���� �� �� ����(��� ���̵�)
             glm::vec3 fn = glm::normalize(glm::cross(Pb - Pa, Pc - Pa));
             Na = Nb = Nc = fn;
         }
@@ -125,9 +123,7 @@ static bool LoadOBJ_PosNorm_Interleaved(const char* path, CubeMesh& out)
         if (firstLine) { RemoveUTF8BOM(line); firstLine = false; }
         if (line.empty()) continue;
 
-        // �ּ� ����
         if (line[0] == '#') continue;
-        // �հ��� ��ŵ
         size_t s = 0; while (s < line.size() && std::isspace((unsigned char)line[s])) ++s;
         if (s >= line.size()) continue;
 
@@ -142,7 +138,6 @@ static bool LoadOBJ_PosNorm_Interleaved(const char* path, CubeMesh& out)
             normals.push_back(glm::normalize(n));
         }
         else if (tag == "f") {
-            // f�� 3�� �̻� ��ū ���� �� �ﰢ�� ��
             std::vector<Idx> vs;
             std::string tok;
             while (iss >> tok) {
@@ -150,9 +145,21 @@ static bool LoadOBJ_PosNorm_Interleaved(const char* path, CubeMesh& out)
             }
             if (vs.size() < 3) continue;
 
-            // �ﰢ���̸� �״��, �� �̻��̸� (0,i-1,i)
+            // ★ 이 face가 시작되는 위치(정점 인덱스) 기억
+            GLsizei startFirst = static_cast<GLsizei>(interleaved.size() / 6);
+            GLsizei vertsBefore = static_cast<GLsizei>(interleaved.size() / 6);
+
+            // 폴리곤이면 팬(triangle fan)으로 삼각형 분해
             for (size_t i = 2; i < vs.size(); ++i) {
                 emitTriangle(vs[0], vs[i - 1], vs[i]);
+            }
+
+            // ★ face가 추가된 후 정점 개수 변화량 = 이 face가 차지하는 정점 수
+            GLsizei vertsAfter = static_cast<GLsizei>(interleaved.size() / 6);
+            GLsizei faceVertCount = vertsAfter - vertsBefore;
+
+            if (faceVertCount > 0) {
+                out.faceRanges.push_back({ startFirst, faceVertCount });
             }
         }
         // �� �� �±״� ���� (vt, usemtl, mtllib, o, g, s ...)
