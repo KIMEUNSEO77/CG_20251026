@@ -17,31 +17,24 @@ GLvoid Reshape(int w, int h);
 
 Mesh gTank;
 float moveX = 0.0f; float moveZ = 0.0f;
-bool middleRotatingY = false;
-float angleY = 0.0f;
+bool middleRotatingY = false; float angleY = 0.0f;
 
-bool rotatingCameraY = false;
-float angleCameraY = 0.0f;
+bool rotatingCameraY = false; float angleCameraY = 0.0f;
 
-bool rotatingCameraCenterY = false;
-float angleCameraCenterY = 0.0f;
+bool rotatingCameraCenterY = false; float angleCameraCenterY = 0.0f;
 
 bool rotatingBarel = false;  // 포신 회전
 float angleBarel1 = 0.0f;    // 왼쪽 포신 각도
 float angleBarel2 = 0.0f;    // 오른쪽 포신 각도
 
-bool rotatingFlag = false;
-float angleFlag1 = 0.0f;
-float angleFlag2 = 0.0f;
-int dirFlag = 1;
-int dirFlag2 = -1;
+bool rotatingFlag = false; 
+float angleFlag1 = 0.0f; float angleFlag2 = 0.0f;
+int dirFlag = 1; int dirFlag2 = -1;
 
 bool changingPosition = false;  // top body 위치 변경
 float animationTime = 0.0f;
-glm::vec3 pos1 = glm::vec3(-0.7f, 0.4f, 0.0f);
-glm::vec3 pos2 = glm::vec3(0.7f, 0.4f, 0.0f);
-glm::vec3 purposePos1 = glm::vec3(0.7f, 0.4f, 0.0f);
-glm::vec3 purposePos2 = glm::vec3(-0.7f, 0.4f, 0.0f);
+glm::vec3 pos1 = glm::vec3(-0.7f, 0.4f, 0.0f); glm::vec3 pos2 = glm::vec3(0.7f, 0.4f, 0.0f);
+glm::vec3 purposePos1 = glm::vec3(0.7f, 0.4f, 0.0f); glm::vec3 purposePos2 = glm::vec3(-0.7f, 0.4f, 0.0f);
 
 bool rotatingAnimation = false;  // 카메라 공전 애니메이션
 bool isCameraWaiting = false;
@@ -49,8 +42,7 @@ int cameraWaitCounter = 0;
 const int cameraWaitFrames = 60; // 1초
 float cameraStartAngle = 0.0f;
 
-float cameraX = 0.0f;
-float cameraZ = 0.0f;
+float cameraX = 0.0f; float cameraZ = 0.0f;
 
 bool rotatingCenterY2 = false;
 
@@ -59,11 +51,7 @@ void Timer(int value)
 	if (middleRotatingY) angleY += 1.0f;
 	if (rotatingCameraY) angleCameraY += 2.0f;
 	if (rotatingCameraCenterY) angleCameraCenterY += 2.0f;
-	if (rotatingBarel) 
-	{
-		angleBarel1 -= 2.0f;
-		angleBarel2 += 2.0f;
-	}
+	if (rotatingBarel) { angleBarel1 -= 2.0f; angleBarel2 += 2.0f; }
 
 	if (rotatingFlag) 
 	{
@@ -81,13 +69,8 @@ void Timer(int value)
 
 		if (animationTime >= 1.0f)
 		{
-			pos1 = purposePos1;
-			pos2 = purposePos2;
-
-			glm::vec3 temp = purposePos1;
-			purposePos1 = purposePos2;
-			purposePos2 = temp;
-
+			pos1 = purposePos1; pos2 = purposePos2;
+			glm::vec3 temp = purposePos1; purposePos1 = purposePos2; purposePos2 = temp;
 			animationTime = 0.0f;
 		}
 
@@ -144,34 +127,23 @@ void Timer(int value)
 
 void StopAllRotations()
 {
-	middleRotatingY = false;
-	rotatingCameraY = false;
-	rotatingCameraCenterY = false;
-	rotatingBarel = false;
-	rotatingFlag = false;
-	changingPosition = false;
-
+	middleRotatingY = false; rotatingCameraY = false; rotatingCameraCenterY = false;
+	rotatingBarel = false; rotatingFlag = false; changingPosition = false;
 	glutPostRedisplay();
 }
 
 
 void Reset()
 {
-	middleRotatingY = false;
-	angleY = 0.0f;
-	rotatingCameraY = false;
-	angleCameraY = 0.0f;
-	rotatingCameraCenterY = false;
-	angleCameraCenterY = 0.0f;
+	middleRotatingY = false; angleY = 0.0f;
+	rotatingCameraY = false; angleCameraY = 0.0f;
+	rotatingCameraCenterY = false; angleCameraCenterY = 0.0f;
 	moveX = 0.0f; moveZ = 0.0f;
 
-	rotatingBarel = false;
-	angleBarel1 = 0.0f; angleBarel2 = 0.0f;
-	rotatingFlag = false;
-	angleFlag1 = 0.0f; angleFlag2 = 0.0f;
+	rotatingBarel = false; angleBarel1 = 0.0f; angleBarel2 = 0.0f;
+	rotatingFlag = false; angleFlag1 = 0.0f; angleFlag2 = 0.0f;
 	dirFlag = 1; dirFlag2 = -1;
-	changingPosition = false;
-	animationTime = 0.0f;
+	changingPosition = false; animationTime = 0.0f;
 	pos1 = glm::vec3(-0.7f, 0.4f, 0.0f); pos2 = glm::vec3(0.7f, 0.4f, 0.0f);
 	purposePos1 = glm::vec3(0.7f, 0.4f, 0.0f); purposePos2 = glm::vec3(-0.7f, 0.4f, 0.0f);
 

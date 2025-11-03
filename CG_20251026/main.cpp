@@ -13,9 +13,7 @@ GLvoid drawScene();
 GLvoid Reshape(int w, int h);
 
 Mesh gSphere;   // 중심의 구
-float angle_1 = 0.0f;
-float angle_2 = 0.0f;
-float angle_3 = 0.0f;
+float angle_1 = 0.0f; float angle_2 = 0.0f; float angle_3 = 0.0f;
 
 bool orthoMode = false;  // false: 원근 투영, true: 직교 투영
 bool wireMode = false;   // false: 솔리드 모드, true: 와이어 모드
@@ -23,9 +21,7 @@ bool wireMode = false;   // false: 솔리드 모드, true: 와이어 모드
 float currentRadius = 3.0f;
 float moonRadius = 1.0f;
 
-float moveX = 0.0f;
-float moveY = 0.0f;
-float moveZ = 0.0f;
+float moveX = 0.0f; float moveY = 0.0f; float moveZ = 0.0f;
 float moveStep = 0.1f;
 
 float angleZ = 0.0f;
@@ -34,9 +30,7 @@ int dirZ = 1;        // z축 회전 방향 1: 양, -1: 음
 
 void Timer(int value)
 {
-	angle_1 += 1.0f;
-	angle_2 += 2.0f;
-	angle_3 += 3.0f;
+	angle_1 += 1.0f; angle_2 += 2.0f; angle_3 += 3.0f;
 
 	if (rotatingZ) angleZ += dirZ * 2.0f;
 	
