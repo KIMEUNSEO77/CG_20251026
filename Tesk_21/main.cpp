@@ -108,18 +108,20 @@ GLvoid drawScene()
 	pTransform = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, &pTransform[0][0]);
 
-	glm::mat4 centerM = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	centerM = glm::scale(centerM, glm::vec3(0.5f, 0.5f, 0.5f));
-	DrawSphere(gSphere, shaderProgramID, centerM, glm::vec3(0.0f, 0.0f, 0.8f));
-
 	// 큐브 그리기
-	 // 공통
-	glm::mat4 M_tank = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	M_tank = glm::translate(M_tank, glm::vec3(-0.5f, 0.0f, -5.0f));
-	M_tank = glm::rotate(M_tank, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	// 아래 몸체
-	glm::mat4 bottomBody = M_tank * glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 5.0f));
-	DrawCube(gCube, shaderProgramID, bottomBody, glm::vec3(0.678f, 0.847f, 0.902f));
+	// 공통
+	glm::mat4 share = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	share = glm::translate(share, glm::vec3(-0.5f, 0.0f, -5.0f));
+	share = glm::rotate(share, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	// 큐브 그리기
+	glm::mat4 centerCube = share * glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 5.0f));
+	DrawCube(gCube, shaderProgramID, centerCube, glm::vec3(0.678f, 0.847f, 0.902f));
+
+	// 공
+	glm::mat4 ball_1 = share
+	* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f))
+	* glm::scale(ball_1, glm::vec3(0.5f, 0.5f, 0.5f));
+	DrawSphere(gSphere, shaderProgramID, ball_1, glm::vec3(0.0f, 0.0f, 0.8f));
 
 	glutSwapBuffers();
 }
