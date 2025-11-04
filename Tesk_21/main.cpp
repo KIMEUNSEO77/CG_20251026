@@ -22,7 +22,7 @@ CubeMesh gCube;
 // 간단 팔레트 
 static const glm::vec3 kFaceColors[6] = 
 {
-	{0.784f, 0.635f, 0.784f}, {0.564f, 0.933f, 0.564f}, {0,0,1},
+	{0.784f, 0.635f, 0.784f}, {0.564f, 0.933f, 0.564f}, {1.0f, 0.7f, 0.3f},
 	{1.0f, 0.713f, 0.756f}, {1,0,1}, {0.678f, 0.847f, 0.902f}
 };
 
@@ -80,7 +80,7 @@ void DrawCube(const CubeMesh& mesh, GLuint shaderProgram, const glm::mat4& model
 	{
 		const auto& r = mesh.faceRanges[i];
 
-		// ★ 면별 색 지정
+		// 면별 색 지정
 		const glm::vec3 c = kFaceColors[i % 6];
 		glUniform3f(colorLoc, c.r, c.g, c.b);
 
@@ -129,17 +129,16 @@ GLvoid drawScene()
 	// 공통
 	glm::mat4 share = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	share = glm::translate(share, glm::vec3(-0.5f, 0.0f, -5.0f));
-	share = glm::rotate(share, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	//share = glm::rotate(share, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	// 큐브 그리기
 	glm::mat4 centerCube = share * glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 5.0f));
 	DrawCube(gCube, shaderProgramID, centerCube, glm::vec3(0.678f, 0.847f, 0.902f));
 
-
 	// 공
-	glm::mat4 ball_1 = share
-	* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f))
-	* glm::scale(ball_1, glm::vec3(0.5f, 0.5f, 0.5f));
-	DrawSphere(gSphere, shaderProgramID, ball_1, glm::vec3(0.0f, 0.0f, 0.8f));
+	glm::mat4 ball_1 = share;
+	ball_1 = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
+	ball_1 = glm::scale(ball_1, glm::vec3(0.5f, 0.5f, 0.5f));
+	DrawSphere(gSphere, shaderProgramID, ball_1, glm::vec3(0.9f, 0.0f, 0.0f));
 
 	glutSwapBuffers();
 }
