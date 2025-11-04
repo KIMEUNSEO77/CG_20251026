@@ -26,29 +26,61 @@ static const glm::vec3 kFaceColors[6] =
 	{1.0f, 0.713f, 0.756f}, {1,0,1}, {0.678f, 0.847f, 0.902f}
 };
 
-int dirX = 1; int dirY = 1;
-float moveX = 0.0f; float moveY = 0.0f;
+struct Ball
+{
+	float x, y;
+	int dirX, dirY;
+	glm::vec3 color;
+};
+Ball balls[5];
+int ballCount = 1;  // 최초 1개
 
 void Timer(int value)
 {
-	moveX += dirX * 0.02f;
-	moveY += dirY * 0.03f;
-
-	// 큐브 경계값
 	float cubeMinX = -3.0f + 0.5f, cubeMaxX = 2.0f - 0.5f;
 	float cubeMinY = -2.5f + 0.5f, cubeMaxY = 2.5f - 0.5f;
 
-	// x축 충돌
-	if (moveX < cubeMinX || moveX > cubeMaxX)
-		dirX *= -1;
-	// y축 충돌
-	if (moveY < cubeMinY || moveY > cubeMaxY)
-		dirY *= -1;
+	for (int i = 0; i < ballCount; ++i) {
+		balls[i].x += balls[i].dirX * 0.02f;
+		balls[i].y += balls[i].dirY * 0.03f;
+
+		if (balls[i].x < cubeMinX || balls[i].x > cubeMaxX)
+			balls[i].dirX *= -1;
+		if (balls[i].y < cubeMinY || balls[i].y > cubeMaxY)
+			balls[i].dirY *= -1;
+	}
 
 	glutPostRedisplay();
 	glutTimerFunc(16, Timer, 1);
 }
 
+void CreateBall()
+{
+	if (ballCount < 5)
+	{
+		// 랜덤 위치, 방향, 색상
+		balls[ballCount].x = 0.0f;
+		balls[ballCount].y = 0.0f;
+		balls[ballCount].dirX = (rand() % 2) ? 1 : -1;
+		balls[ballCount].dirY = (rand() % 2) ? 1 : -1;
+		balls[ballCount].color = glm::vec3(
+			0.2f + 0.7f * (rand() % 100) / 100.0f,
+			0.2f + 0.7f * (rand() % 100) / 100.0f,
+			0.2f + 0.7f * (rand() % 100) / 100.0f
+		);
+		++ballCount;
+	}
+}
+void Keyboard(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 'b':
+		CreateBall();
+		break;
+	case 'q': exit(0); break;
+	}
+}
 int main(int argc, char** argv)
 {
 	glutInit(&argc, argv);
@@ -66,6 +98,9 @@ int main(int argc, char** argv)
 	glEnable(GL_DEPTH_TEST); // 깊이 테스트 활성화
 	glEnable(GL_CULL_FACE);  // 은면 제거 활성화
 	glCullFace(GL_FRONT);    // 앞면 제거
+
+	// main 함수 내에서
+	balls[0] = { 0.0f, 0.0f, 1, 1, glm::vec3(0.9f, 0.0f, 0.0f) };  // 최초 공
 
 	make_vertexShaders();
 	make_fragmentShaders();
@@ -85,6 +120,7 @@ int main(int argc, char** argv)
 	}
 
 	glutTimerFunc(16, Timer, 1);
+	glutKeyboardFunc(Keyboard);
 
 	glutMainLoop();
 
@@ -161,10 +197,13 @@ GLvoid drawScene()
 	DrawCube(gCube, shaderProgramID, centerCube, glm::vec3(0.678f, 0.847f, 0.902f));
 
 	// 공
-	glm::mat4 ball_1 = share;
-	ball_1 = glm::translate(glm::mat4(1.0f), glm::vec3(moveX, moveY, -3.0f));
-	ball_1 = glm::scale(ball_1, glm::vec3(0.5f, 0.5f, 0.5f));
-	DrawSphere(gSphere, shaderProgramID, ball_1, glm::vec3(0.9f, 0.0f, 0.0f));
+	for (int i = 0; i < ballCount; ++i) 
+	{
+		glm::mat4 ballModel = share;
+		ballModel = glm::translate(glm::mat4(1.0f), glm::vec3(balls[i].x, balls[i].y, -3.0f));
+		ballModel = glm::scale(ballModel, glm::vec3(0.5f, 0.5f, 0.5f));
+		DrawSphere(gSphere, shaderProgramID, ballModel, balls[i].color);
+	}
 
 	glutSwapBuffers();
 }
