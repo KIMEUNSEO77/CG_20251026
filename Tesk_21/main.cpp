@@ -26,6 +26,29 @@ static const glm::vec3 kFaceColors[6] =
 	{1.0f, 0.713f, 0.756f}, {1,0,1}, {0.678f, 0.847f, 0.902f}
 };
 
+int dirX = 1; int dirY = 1;
+float moveX = 0.0f; float moveY = 0.0f;
+
+void Timer(int value)
+{
+	moveX += dirX * 0.02f;
+	moveY += dirY * 0.03f;
+
+	// 큐브 경계값
+	float cubeMinX = -3.0f + 0.5f, cubeMaxX = 2.0f - 0.5f;
+	float cubeMinY = -2.5f + 0.5f, cubeMaxY = 2.5f - 0.5f;
+
+	// x축 충돌
+	if (moveX < cubeMinX || moveX > cubeMaxX)
+		dirX *= -1;
+	// y축 충돌
+	if (moveY < cubeMinY || moveY > cubeMaxY)
+		dirY *= -1;
+
+	glutPostRedisplay();
+	glutTimerFunc(16, Timer, 1);
+}
+
 int main(int argc, char** argv)
 {
 	glutInit(&argc, argv);
@@ -60,6 +83,8 @@ int main(int argc, char** argv)
 		std::cerr << "Failed to load cube.obj\n";
 		return 1;
 	}
+
+	glutTimerFunc(16, Timer, 1);
 
 	glutMainLoop();
 
@@ -131,12 +156,13 @@ GLvoid drawScene()
 	share = glm::translate(share, glm::vec3(-0.5f, 0.0f, -5.0f));
 	//share = glm::rotate(share, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	// 큐브 그리기
+	// 중심 (-0.5, 0, -5) 한변의 길이 5
 	glm::mat4 centerCube = share * glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 5.0f));
 	DrawCube(gCube, shaderProgramID, centerCube, glm::vec3(0.678f, 0.847f, 0.902f));
 
 	// 공
 	glm::mat4 ball_1 = share;
-	ball_1 = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
+	ball_1 = glm::translate(glm::mat4(1.0f), glm::vec3(moveX, moveY, -3.0f));
 	ball_1 = glm::scale(ball_1, glm::vec3(0.5f, 0.5f, 0.5f));
 	DrawSphere(gSphere, shaderProgramID, ball_1, glm::vec3(0.9f, 0.0f, 0.0f));
 
