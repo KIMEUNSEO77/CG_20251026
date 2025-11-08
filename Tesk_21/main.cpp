@@ -103,6 +103,8 @@ void MouseMotion(int x, int y)
 	}
 
 	int dx = x - prevMouseX;
+	if (angleZ >= 60.0f) angleZ = 60.0f;
+	else if (angleZ <= -60.0f) angleZ = -60.0f;
 	angleZ += dx * 0.5f;
 
 	prevMouseX = x;
