@@ -38,7 +38,7 @@ float moveZ = 0.0f;  // z√‡ ¿Ãµø
 
 void Timer(int value)
 {
-	float cubeMinX = -3.0f + 0.5f, cubeMaxX = 2.0f - 0.5f;
+	float cubeMinX = -2.5f + 0.5f, cubeMaxX = 2.5f - 0.5f;
 	float cubeMinY = -2.5f + 0.5f, cubeMaxY = 2.5f - 0.5f;
 
 	for (int i = 0; i < ballCount; ++i) {
@@ -202,7 +202,7 @@ GLvoid drawScene()
 	for (int i = 0; i < ballCount; ++i) 
 	{
 		glm::mat4 ballModel = share;
-		ballModel = glm::translate(glm::mat4(1.0f), glm::vec3(balls[i].x, balls[i].y, -3.0f));
+		ballModel = glm::translate(ballModel, glm::vec3(balls[i].x, balls[i].y, 2.0f));
 		ballModel = glm::scale(ballModel, glm::vec3(0.5f, 0.5f, 0.5f));
 		DrawSphere(gSphere, shaderProgramID, ballModel, balls[i].color);
 	}
