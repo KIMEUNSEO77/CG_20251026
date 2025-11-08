@@ -10,6 +10,8 @@
 #include "obj_load.h"
 #include "obj_cube_load.h"
 
+#include <algorithm>
+
 void make_vertexShaders();
 void make_fragmentShaders();
 GLuint make_shaderProgram();
@@ -38,6 +40,7 @@ float moveZ = 0.0f;  // z축 이동
 bool rotatingY_plus = false; bool rotatingY_minus = false; float angleY = 0.0f;   // y축 회전
 int prevMouseX = -1;  // 이전 마우스 x 좌표 
 float angleZ = 0.0f; // z축 회전
+float moveX = 0.0f;   // 작은 큐브들 이동
 
 void Timer(int value)
 {
@@ -106,6 +109,11 @@ void MouseMotion(int x, int y)
 	if (angleZ >= 60.0f) angleZ = 60.0f;
 	else if (angleZ <= -60.0f) angleZ = -60.0f;
 	angleZ += dx * 0.5f;
+
+	// 작은 큐브들 이동
+	if (moveX >= 2.0f) moveX = 2.0f;
+	else if (moveX <= -2.0f) moveX = -2.0f;
+	moveX += -dx * 0.01f;
 
 	prevMouseX = x;
 
@@ -244,7 +252,7 @@ GLvoid drawScene()
 	for (int i = 0; i < 3; i++)
 	{
 		glm::mat4 smallCubeModel = share;
-		smallCubeModel = glm::translate(smallCubeModel, glm::vec3(0.0f, -2.0f, 2.0f - 1.5*i));
+		smallCubeModel = glm::translate(smallCubeModel, glm::vec3(0.0f + moveX, -2.0f, 2.0f - 1.5*i));
 		smallCubeModel = glm::scale(smallCubeModel,
 			glm::vec3(0.5f + (0.1f * i), 0.5f + (0.1f * i), 0.5f + (0.1f * i)));
 		DrawCube(gCube, shaderProgramID, smallCubeModel, glm::vec3(1.0f, 0.7f, 0.3f));
