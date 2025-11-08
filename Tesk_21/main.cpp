@@ -35,13 +35,15 @@ struct Ball
 Ball balls[5];
 int ballCount = 1;  // 최초 1개
 float moveZ = 0.0f;  // z축 이동
+bool rotatingY_plus = false; bool rotatingY_minus = false; float angleY = 0.0f;   // y축 회전
 
 void Timer(int value)
 {
 	float cubeMinX = -2.5f + 0.5f, cubeMaxX = 2.5f - 0.5f;
 	float cubeMinY = -2.5f + 0.5f, cubeMaxY = 2.5f - 0.5f;
 
-	for (int i = 0; i < ballCount; ++i) {
+	for (int i = 0; i < ballCount; ++i) 
+	{
 		balls[i].x += balls[i].dirX * 0.02f;
 		balls[i].y += balls[i].dirY * 0.03f;
 
@@ -50,6 +52,9 @@ void Timer(int value)
 		if (balls[i].y < cubeMinY || balls[i].y > cubeMaxY)
 			balls[i].dirY *= -1;
 	}
+
+	if (rotatingY_plus) angleY += 0.2f;
+	if (rotatingY_minus) angleY -= 0.2f;
 
 	glutPostRedisplay();
 	glutTimerFunc(16, Timer, 1);
@@ -78,6 +83,8 @@ void Keyboard(unsigned char key, int x, int y)
 	{
 	case 'z': moveZ += 0.1f; glutPostRedisplay(); break;
 	case 'Z': moveZ -= 0.1f; glutPostRedisplay(); break;
+	case 'y': rotatingY_plus = !rotatingY_plus; rotatingY_minus = false; break;
+	case 'Y': rotatingY_minus = !rotatingY_minus; rotatingY_plus = false; break;
 	case 'b':
 		CreateBall();
 		break;
@@ -103,7 +110,7 @@ int main(int argc, char** argv)
 	glCullFace(GL_FRONT);    // 앞면 제거
 
 	// main 함수 내에서
-	balls[0] = { 0.0f, 0.0f, 1, 1, glm::vec3(0.9f, 0.0f, 0.0f) };  // 최초 공
+	balls[0] = { 0.0f, 0.0f, 1, -1, glm::vec3(0.9f, 0.0f, 0.0f) };  // 최초 공
 
 	make_vertexShaders();
 	make_fragmentShaders();
@@ -193,6 +200,7 @@ GLvoid drawScene()
 	// 공통
 	glm::mat4 share = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f + moveZ));
 	share = glm::translate(share, glm::vec3(-0.5f, 0.0f, -5.0f));
+	share = glm::rotate(share, glm::radians(angleY), glm::vec3(0, 1, 0));
 	// 큐브 그리기
 	// 중심 (-0.5, 0, -5) 한변의 길이 5
 	glm::mat4 centerCube = share * glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 5.0f));
