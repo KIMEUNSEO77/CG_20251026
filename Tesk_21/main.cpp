@@ -209,9 +209,9 @@ GLvoid drawScene()
 	for (int i = 0; i < 3; i++)
 	{
 		glm::mat4 smallCubeModel = share;
-		smallCubeModel = glm::translate(smallCubeModel, glm::vec3(0.0f, -2.0f + i, 0.0f - i));
+		smallCubeModel = glm::translate(smallCubeModel, glm::vec3(0.0f, -2.0f, 3.0f - 1.5*i));
 		smallCubeModel = glm::scale(smallCubeModel,
-			glm::vec3(0.5f + (0.05f * i), 0.5f + (0.05f * i), 0.5f + (0.05f * i)));
+			glm::vec3(0.5f + (0.1f * i), 0.5f + (0.1f * i), 0.5f + (0.1f * i)));
 		DrawCube(gCube, shaderProgramID, smallCubeModel, glm::vec3(1.0f, 0.7f, 0.3f));
 	}
 	glCullFace(GL_FRONT);    // 앞면 제거
