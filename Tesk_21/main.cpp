@@ -36,6 +36,8 @@ Ball balls[5];
 int ballCount = 1;  // 최초 1개
 float moveZ = 0.0f;  // z축 이동
 bool rotatingY_plus = false; bool rotatingY_minus = false; float angleY = 0.0f;   // y축 회전
+int prevMouseX = -1;  // 이전 마우스 x 좌표 
+float angleZ = 0.0f; // z축 회전
 
 void Timer(int value)
 {
@@ -91,6 +93,23 @@ void Keyboard(unsigned char key, int x, int y)
 	case 'q': exit(0); break;
 	}
 }
+
+void MouseMotion(int x, int y)
+{
+	if (prevMouseX == -1)
+	{
+		prevMouseX = x;
+		return;
+	}
+
+	int dx = x - prevMouseX;
+	angleZ += dx * 0.5f;
+
+	prevMouseX = x;
+
+	glutPostRedisplay();
+}
+
 int main(int argc, char** argv)
 {
 	glutInit(&argc, argv);
@@ -131,6 +150,8 @@ int main(int argc, char** argv)
 
 	glutTimerFunc(16, Timer, 1);
 	glutKeyboardFunc(Keyboard);
+	glutMotionFunc(MouseMotion);
+	glutPassiveMotionFunc(MouseMotion);
 
 	glutMainLoop();
 
@@ -200,6 +221,7 @@ GLvoid drawScene()
 	// 공통
 	glm::mat4 share = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f + moveZ));
 	share = glm::translate(share, glm::vec3(-0.5f, 0.0f, -5.0f));
+	share = glm::rotate(share, glm::radians(angleZ), glm::vec3(0, 0, 1));
 	share = glm::rotate(share, glm::radians(angleY), glm::vec3(0, 1, 0));
 	// 큐브 그리기
 	// 중심 (-0.5, 0, -5) 한변의 길이 5
@@ -220,7 +242,7 @@ GLvoid drawScene()
 	for (int i = 0; i < 3; i++)
 	{
 		glm::mat4 smallCubeModel = share;
-		smallCubeModel = glm::translate(smallCubeModel, glm::vec3(0.0f, -2.0f, 3.0f - 1.5*i));
+		smallCubeModel = glm::translate(smallCubeModel, glm::vec3(0.0f, -2.0f, 2.0f - 1.5*i));
 		smallCubeModel = glm::scale(smallCubeModel,
 			glm::vec3(0.5f + (0.1f * i), 0.5f + (0.1f * i), 0.5f + (0.1f * i)));
 		DrawCube(gCube, shaderProgramID, smallCubeModel, glm::vec3(1.0f, 0.7f, 0.3f));
