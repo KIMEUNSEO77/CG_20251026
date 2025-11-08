@@ -19,7 +19,7 @@ GLvoid Reshape(int w, int h);
 Mesh gSphere;
 CubeMesh gCube;
 
-// 간단 팔레트 
+// 면 색상 
 static const glm::vec3 kFaceColors[6] = 
 {
 	{0.784f, 0.635f, 0.784f}, {0.564f, 0.933f, 0.564f}, {1.0f, 0.7f, 0.3f},
@@ -62,7 +62,7 @@ void CreateBall()
 		balls[ballCount].x = 0.0f;
 		balls[ballCount].y = 0.0f;
 		balls[ballCount].dirX = (rand() % 2) ? 1 : -1;
-		balls[ballCount].dirY = (rand() % 2) ? 1 : -1;
+		balls[ballCount].dirY = -1;
 		balls[ballCount].color = glm::vec3(
 			0.2f + 0.7f * (rand() % 100) / 100.0f,
 			0.2f + 0.7f * (rand() % 100) / 100.0f,
@@ -190,7 +190,6 @@ GLvoid drawScene()
 	// 공통
 	glm::mat4 share = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	share = glm::translate(share, glm::vec3(-0.5f, 0.0f, -5.0f));
-	//share = glm::rotate(share, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	// 큐브 그리기
 	// 중심 (-0.5, 0, -5) 한변의 길이 5
 	glm::mat4 centerCube = share * glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 5.0f));
@@ -204,6 +203,18 @@ GLvoid drawScene()
 		ballModel = glm::scale(ballModel, glm::vec3(0.5f, 0.5f, 0.5f));
 		DrawSphere(gSphere, shaderProgramID, ballModel, balls[i].color);
 	}
+
+	glCullFace(GL_BACK);  // 뒷면 제거
+	// 작은 큐브들
+	for (int i = 0; i < 3; i++)
+	{
+		glm::mat4 smallCubeModel = share;
+		smallCubeModel = glm::translate(smallCubeModel, glm::vec3(0.0f, -2.0f + i, 0.0f - i));
+		smallCubeModel = glm::scale(smallCubeModel,
+			glm::vec3(0.5f + (0.05f * i), 0.5f + (0.05f * i), 0.5f + (0.05f * i)));
+		DrawCube(gCube, shaderProgramID, smallCubeModel, glm::vec3(1.0f, 0.7f, 0.3f));
+	}
+	glCullFace(GL_FRONT);    // 앞면 제거
 
 	glutSwapBuffers();
 }
