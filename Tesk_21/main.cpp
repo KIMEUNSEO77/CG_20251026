@@ -34,6 +34,7 @@ struct Ball
 };
 Ball balls[5];
 int ballCount = 1;  // 최초 1개
+float moveZ = 0.0f;  // z축 이동
 
 void Timer(int value)
 {
@@ -75,6 +76,8 @@ void Keyboard(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
+	case 'z': moveZ += 0.1f; glutPostRedisplay(); break;
+	case 'Z': moveZ -= 0.1f; glutPostRedisplay(); break;
 	case 'b':
 		CreateBall();
 		break;
@@ -188,7 +191,7 @@ GLvoid drawScene()
 
 	// 큐브 그리기
 	// 공통
-	glm::mat4 share = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	glm::mat4 share = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f + moveZ));
 	share = glm::translate(share, glm::vec3(-0.5f, 0.0f, -5.0f));
 	// 큐브 그리기
 	// 중심 (-0.5, 0, -5) 한변의 길이 5
